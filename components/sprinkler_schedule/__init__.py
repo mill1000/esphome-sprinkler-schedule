@@ -176,4 +176,40 @@ async def to_code(config) -> None:
                            start_time_var,
                            )
 
+    if switch_config := config.get(CONF_ENABLE_SWITCH):
+        sw = await switch.new_switch(switch_config)
+        await cg.register_component(sw, switch_config)
+        cg.add(var.set_enable_switch(sw))
+
+    # TODO
+    # if CONF_REPEAT_NUMBER in sprinkler_controller:
+    #     num_repeat_var = await number.new_number(
+    #         sprinkler_controller[CONF_REPEAT_NUMBER],
+    #         min_value=sprinkler_controller[CONF_REPEAT_NUMBER][CONF_MIN_VALUE],
+    #         max_value=sprinkler_controller[CONF_REPEAT_NUMBER][CONF_MAX_VALUE],
+    #         step=sprinkler_controller[CONF_REPEAT_NUMBER][CONF_STEP],
+    #     )
+    #     await cg.register_component(
+    #         num_repeat_var, sprinkler_controller[CONF_REPEAT_NUMBER]
+    #     )
+    #     cg.add(
+    #         num_repeat_var.set_initial_value(
+    #             sprinkler_controller[CONF_REPEAT_NUMBER][CONF_INITIAL_VALUE]
+    #         )
+    #     )
+    #     cg.add(
+    #         num_repeat_var.set_restore_value(
+    #             sprinkler_controller[CONF_REPEAT_NUMBER][CONF_RESTORE_VALUE]
+    #         )
+    #     )
+
+    #     if CONF_SET_ACTION in sprinkler_controller[CONF_REPEAT_NUMBER]:
+    #         await automation.build_automation(
+    #             num_repeat_var.get_set_trigger(),
+    #             [(float, "x")],
+    #             sprinkler_controller[CONF_REPEAT_NUMBER][CONF_SET_ACTION],
+    #         )
+
+    #     cg.add(var.set_controller_repeat_number(num_repeat_var))
+
     await cg.register_component(var, config)
