@@ -44,6 +44,26 @@ void update_last_run_timestamp_(std::time_t value) {
     this->last_run_sensor_->publish_state(value);
 }
 
+void SprinklerScheduleComponent::update_estimated_duration_() {
+  auto estimated_duration = 0;
+  for (const auto &valve : this->valves_) {
+    // Sum run duration of all enabled valves
+    if (valve.enable_switch == nullptr || valve.enable_switch->state)
+      estimated_duration += valve.duration_number->state;
+  }
+
+  // Apply repetitions
+  estimated_duration *= this->get_cycle_repetitions()
+
+  // Update sensor as needed
+  if (this->estimated_duration_sensor_ && estimated_duration != this->estimated_duration_sensor_->raw_state)
+    this->estimated_duration_sensor_->publish_state(estimated_duration);
+}
+
+void SprinklerScheduleComponent::get_cycle_repetitions() {
+  return this->repetitions_number == NULL ? 1 : this->repetitions_number->state;
+}
+
 
 void SprinklerScheduleComponent::calculate_next_run_(std::time_t from, uint32_t days) {
   // Convert to local time and adjust for start time and days parameter
@@ -82,8 +102,7 @@ void SprinklerScheduleComponent::run_() {
   }
 
   // Copy repititions to controller
-  auto repeat_count = this->repetitions_number == NULL ? 0 : this->repetitions_number->state - 1;
-  controller_->set_repeat(repeat_count);
+  controller_->set_repeat(this->get_cycle_repetitions() - 1);
 
   // Update last run timestamp
   this->update_last_run_timestamp_(now.timestamp);

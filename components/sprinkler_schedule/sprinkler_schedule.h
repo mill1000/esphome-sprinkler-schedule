@@ -56,7 +56,9 @@ class SprinklerScheduleComponent : public Component {
 
   void update_next_run_timestamp_(std::time_t value);
   void update_last_run_timestamp_(std::time_t value);
+  void update_estimated_duration_();
 
+  void get_cycle_repetitions_() const;
 
   void calculate_next_run_(std::time_t from, uint32_t days);
   void run_(const ESPTime& now);
