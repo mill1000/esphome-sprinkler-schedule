@@ -36,10 +36,20 @@ class SprinklerScheduleComponent : public Component {
   void dump_config() override;
 
  protected:
+  ESPPreferenceObject pref_;
+
   sprinkler::Sprinkler* controller_ = {nullptr};
   const time::RealTimeClock* clock_ = {nullptr};
   SprinklerScheduleTime* start_time_ = {nullptr};
-};
+
+  std::time_t last_run_timestamp_;
+  std::time_t next_run_timestamp_;
+
+constexpr uint32_t RESTORE_STATE_VERSION = 0xA1F0E60D;
+struct SprinklerScheduleRestoreState {
+  std::time_t last_run_timestamp;
+  std::time_t next_run_timestamp;
+} __attribute__((packed));
 
 class SprinklerScheduleTime : public datetime::TimeEntity, public Component {
  public:
