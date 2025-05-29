@@ -23,6 +23,7 @@ MULTI_CONF = True
 
 CONF_CONTROLLER_ID = "controller_id"
 CONF_TIME_ID = "time_id"
+CONF_SCHEDULE_ID = "schedule_id"
 CONF_START_TIME = "start_time"
 CONF_FREQUENCY_NUMBER = "frequency_number"
 CONF_REPETITIONS_NUMBER = "repetitions_number"

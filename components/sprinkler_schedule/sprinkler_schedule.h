@@ -1,6 +1,7 @@
 #pragma once
 
 #include "esphome/components/datetime/time_entity.h"
+#include "esphome/components/sensor/sensor.h"
 #include "esphome/components/sprinkler/sprinkler.h"
 #include "esphome/components/time/real_time_clock.h"
 #include "esphome/core/component.h"
@@ -10,6 +11,11 @@ namespace esphome {
 namespace sprinkler_schedule {
 
 class SprinklerScheduleComponent : public Component {
+
+  SUB_SENSOR(last_run);
+  SUB_SENSOR(next_run);
+  SUB_SENSOR(estimated_duration);
+
  public:
   SprinklerScheduleComponent(
       sprinkler::Sprinkler* controller,
