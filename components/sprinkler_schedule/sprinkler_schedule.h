@@ -11,6 +11,8 @@
 namespace esphome {
 namespace sprinkler_schedule {
 
+class SprinklerScheduleTime;
+
 class SprinklerScheduleComponent : public Component {
   SUB_SWITCH(enable);
 
@@ -31,7 +33,7 @@ class SprinklerScheduleComponent : public Component {
  protected:
   sprinkler::Sprinkler& controller_;
   const time::RealTimeClock& clock_;
-  datetime::TimeEntity& start_time_;
+  SprinklerScheduleTime& start_time_;
 };
 
 class SprinklerScheduleTime : public datetime::TimeEntity, public Component {
@@ -40,22 +42,21 @@ class SprinklerScheduleTime : public datetime::TimeEntity, public Component {
 
   void setup() {
     // Attempt to load previous value from flash
-    this->pref_ = global_preferences->make_preference<datetime::TimeEntityRestoreState>(194434060U ^ this->get_object_id_hash());
+    this->pref_ = global_preferences->make_preference<datetime::TimeEntityRestoreState>(this->get_object_id_hash());
     datetime::TimeEntityRestoreState temp = {};
     if (this->pref_.load(&temp)) {
       temp.apply(this);
       return;
     }
 
-    // Set initial value if restore isn't successful
-    ESPTime state = this->initial_value_;
-    this->hour_ = state.hour;
-    this->minute_ = state.minute;
-    this->second_ = state.second;
+    // Use initial value if restore isn't successful
+    this->hour_ = this->initial_value_.hour;
+    this->minute_ = this->initial_value_.minute;
+    this->second_ = this->initial_value_.second;
     this->publish_state();
   }
 
-  void control(const datetime::TimeCall& call) {
+  void control(const datetime::TimeCall& call) override {
     // Update and publish state
     this->hour_ = call.get_hour().value_or(this->hour_);
     this->minute_ = call.get_minute().value_or(this->minute_);
@@ -63,10 +64,11 @@ class SprinklerScheduleTime : public datetime::TimeEntity, public Component {
     this->publish_state();
 
     // Save value to flash for restore
-    datetime::TimeEntityRestoreState temp = {};
-    temp.hour = this->hour_;
-    temp.minute = this->minute_;
-    temp.second = this->second_;
+    datetime::TimeEntityRestoreState temp = {
+        .hour = this->hour_,
+        .minute = this->minute_,
+        .second = this->second_,
+    };
     this->pref_.save(&temp);
   }
 
