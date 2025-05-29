@@ -44,7 +44,8 @@ _VALVE_SCHEMA = cv.Schema(
             ),
             key=CONF_NAME,
         ),
-        cv.Optional(CONF_RUN_DURATION_NUMBER): cv.maybe_simple_value(
+        # TODO should support run_duration too?
+        cv.Required(CONF_RUN_DURATION_NUMBER): cv.maybe_simple_value(
             number.number_schema(
                 SprinklerControllerNumber, entity_category=ENTITY_CATEGORY_CONFIG
             )
@@ -85,7 +86,6 @@ CONFIG_SCHEMA = (
                 ),
                 key=CONF_NAME,
             ),
-
             cv.Required(CONF_VALVES): cv.ensure_list(_VALVE_SCHEMA),
         }
     )
@@ -95,6 +95,7 @@ CONFIG_SCHEMA = (
 
 async def start_time_to_code(config) -> Pvariable:
     var = await datetime.new_datetime(config)
+    await cg.register_component(var, config)
 
     if initial_value := config.get(CONF_INITIAL_VALUE):
         time_struct = cg.StructInitializer(
@@ -105,8 +106,6 @@ async def start_time_to_code(config) -> Pvariable:
         )
         cg.add(var.set_initial_value(time_struct))
 
-    await cg.register_component(var, config)
-
     return var
 
 
@@ -116,10 +115,33 @@ async def to_code(config) -> None:
 
     start_time_var = await start_time_to_code(config[CONF_START_TIME])
 
-    var = cg.new_Pvariable(config[CONF_ID],
-                           controller_var,
-                           clock_var,
-                           start_time_var,
-                           )
+    schedule_var = cg.new_Pvariable(config[CONF_ID],
+                                    controller_var,
+                                    clock_var,
+                                    start_time_var,
+                                    )
 
-    await cg.register_component(var, config)
+    await cg.register_component(schedule_var, config)
+
+    for valve in config[CONF_VALVES]:
+        if switch_config := config.get(CONF_ENABLE_SWITCH):
+            enable_sw = await switch.new_switch(switch_config)
+        else:
+            enable_sw = cg.nullptr
+        # await cg.register_component(enable_sw, valve[CONF_ENABLE_SWITCH]) # TODO?
+
+        number_config = valve[CONF_RUN_DURATION_NUMBER]
+        duration_num = await number.new_number(
+            number_config,
+            min_value=number_config[CONF_MIN_VALUE],
+            max_value=number_config[CONF_MAX_VALUE],
+            step=number_config[CONF_STEP],
+        )
+
+        cg.add(duration_num.set_initial_value(
+            number_config[CONF_INITIAL_VALUE]))
+        cg.add(duration_num.set_restore_value(
+            number_config[CONF_RESTORE_VALUE]))
+        # await cg.register_component(num_rd_var, valve[CONF_RUN_DURATION_NUMBER]) TODO?
+
+        cg.add(schedule_var.add_valve(enable_sw, duration_num))

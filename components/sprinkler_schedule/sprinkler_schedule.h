@@ -24,6 +24,11 @@ class SprinklerScheduleComponent : public Component {
   SUB_NUMBER(repetitions);
   SUB_NUMBER(frequency);
  public:
+  struct Valve {
+    const SprinklerControllerSwitch* enable_switch;
+    const SprinklerControllerNumber* duration_number;
+  };
+
   SprinklerScheduleComponent(
       sprinkler::Sprinkler* controller,
       const time::RealTimeClock* clock,
@@ -35,6 +40,8 @@ class SprinklerScheduleComponent : public Component {
   void loop() override;
   void dump_config() override;
 
+  void add_valve(const SprinklerControllerSwitch* enable_sw, const SprinklerControllerNumber* duration_num) { this->valves_.push_back({enable_sw, duration_num}) }
+
  protected:
   ESPPreferenceObject pref_;
 
@@ -45,8 +52,15 @@ class SprinklerScheduleComponent : public Component {
   std::time_t last_run_timestamp_;
   std::time_t next_run_timestamp_;
 
+  std::vector<Valve> valves_;
+
   void update_next_run_timestamp_(std::time_t value);
   void update_last_run_timestamp_(std::time_t value);
+
+
+  void calculate_next_run_(std::time_t from, uint32_t days);
+  void run_(const ESPTime& now);
+};
 
 constexpr uint32_t RESTORE_STATE_VERSION = 0xA1F0E60D;
 struct SprinklerScheduleRestoreState {
