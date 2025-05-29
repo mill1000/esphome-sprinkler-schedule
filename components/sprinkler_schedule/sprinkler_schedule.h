@@ -24,16 +24,18 @@ class SprinklerScheduleComponent : public Component {
   SprinklerScheduleComponent(
       sprinkler::Sprinkler* controller,
       const time::RealTimeClock* clock,
-      datetime::TimeEntity* start_time) : controller_(*controller), clock_(*clock), start_time_(*start_time) {}
+      datetime::TimeEntity* start_time) : controller_(controller),
+                                          clock_(clock),
+                                          start_time_(start_time) {}
 
   void setup() override;
   void loop() override;
   void dump_config() override;
 
  protected:
-  sprinkler::Sprinkler& controller_;
-  const time::RealTimeClock& clock_;
-  SprinklerScheduleTime& start_time_;
+  sprinkler::Sprinkler* controller_ = {nullptr};
+  const time::RealTimeClock* clock_ = {nullptr};
+  SprinklerScheduleTime* start_time_ = {nullptr};
 };
 
 class SprinklerScheduleTime : public datetime::TimeEntity, public Component {
