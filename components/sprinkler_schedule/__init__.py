@@ -1,5 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
+from esphome.codegen import Pvariable
 from esphome.components import datetime, number, sprinkler, switch, time
 from esphome.components.sprinkler import (CONF_ENABLE_SWITCH,
                                           CONF_RUN_DURATION_NUMBER,
@@ -7,14 +8,16 @@ from esphome.components.sprinkler import (CONF_ENABLE_SWITCH,
                                           SprinklerControllerNumber,
                                           SprinklerControllerSwitch,
                                           validate_min_max)
-from esphome.const import (CONF_ID, CONF_INITIAL_VALUE, CONF_MAX_VALUE,
-                           CONF_MIN_VALUE, CONF_NAME, CONF_RESTORE_VALUE,
+from esphome.const import (CONF_HOUR, CONF_ID, CONF_INITIAL_VALUE,
+                           CONF_MAX_VALUE, CONF_MIN_VALUE, CONF_MINUTE,
+                           CONF_NAME, CONF_RESTORE_VALUE, CONF_SECOND,
                            CONF_SET_ACTION, CONF_STEP,
                            CONF_UNIT_OF_MEASUREMENT, ENTITY_CATEGORY_CONFIG,
                            UNIT_MINUTE, UNIT_SECOND)
 
 CODEOWNERS = ["@mill1000"]
-DEPENDENCIES = ["sprinkler"]
+DEPENDENCIES = ["sprinkler", "time"]
+AUTO_LOAD = ["number", "switch", "datetime"]
 
 MULTI_CONF = True
 
@@ -139,9 +142,38 @@ CONFIG_SCHEMA = (
 )
 
 
+async def start_time_to_code(config) -> Pvariable:
+
+    var = await datetime.new_datetime(config)
+
+    # cg.add(var.set_optimistic(True))
+    # cg.add(var.set_restore_value(True))
+
+    if initial_value := config.get(CONF_INITIAL_VALUE):
+
+        time_struct = cg.StructInitializer(
+            cg.ESPTime,
+            ("second", initial_value[CONF_SECOND]),
+            ("minute", initial_value[CONF_MINUTE]),
+            ("hour", initial_value[CONF_HOUR]),
+        )
+        cg.add(var.set_initial_value(time_struct))
+
+    await cg.register_component(var, config)
+
+    return var
+
+
 async def to_code(config) -> None:
     controller_var = await cg.get_variable(config[CONF_CONTROLLER_ID])
+    clock_var = await cg.get_variable(config[CONF_TIME_ID])
 
-    var = cg.new_Pvariable(config[CONF_ID], controller_var)
+    start_time_var = await start_time_to_code(config[CONF_START_TIME])
+
+    var = cg.new_Pvariable(config[CONF_ID],
+                           controller_var,
+                           clock_var,
+                           start_time_var,
+                           )
 
     await cg.register_component(var, config)
