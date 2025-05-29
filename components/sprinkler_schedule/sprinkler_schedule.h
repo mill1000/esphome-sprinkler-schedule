@@ -1,6 +1,7 @@
 #pragma once
 
 #include "esphome/components/datetime/time_entity.h"
+#include "esphome/components/number/number.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/sprinkler/sprinkler.h"
 #include "esphome/components/switch/switch.h"
@@ -20,6 +21,8 @@ class SprinklerScheduleComponent : public Component {
   SUB_SENSOR(next_run);
   SUB_SENSOR(estimated_duration);
 
+  SUB_NUMBER(repetitions);
+  SUB_NUMBER(frequency);
  public:
   SprinklerScheduleComponent(
       sprinkler::Sprinkler* controller,

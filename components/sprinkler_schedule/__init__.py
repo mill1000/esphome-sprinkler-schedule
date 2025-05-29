@@ -25,8 +25,6 @@ CONF_CONTROLLER_ID = "controller_id"
 CONF_TIME_ID = "time_id"
 CONF_SCHEDULE_ID = "schedule_id"
 CONF_START_TIME = "start_time"
-CONF_FREQUENCY_NUMBER = "frequency_number"
-CONF_REPETITIONS_NUMBER = "repetitions_number"
 
 sprinkler_schedule_ns = cg.esphome_ns.namespace("sprinkler_schedule")
 SprinklerScheduleComponent = sprinkler_schedule_ns.class_(
@@ -88,46 +86,7 @@ CONFIG_SCHEMA = (
                 ),
                 key=CONF_NAME,
             ),
-            cv.Required(CONF_FREQUENCY_NUMBER): cv.maybe_simple_value(
-                number.number_schema(
-                    SprinklerControllerNumber, entity_category=ENTITY_CATEGORY_CONFIG
-                )
-                .extend(
-                    {
-                        cv.Optional(CONF_INITIAL_VALUE, default=2): cv.positive_int,
-                        cv.Optional(CONF_MAX_VALUE, default=7): cv.positive_int,
-                        cv.Optional(CONF_MIN_VALUE, default=1): cv.positive_int,
-                        cv.Optional(CONF_RESTORE_VALUE, default=True): cv.boolean,
-                        cv.Optional(CONF_STEP, default=1): cv.positive_int,
-                        # cv.Optional(CONF_SET_ACTION): automation.validate_automation(
-                        #     single=True
-                        # ),
-                    }
-                )
-                .extend(cv.COMPONENT_SCHEMA),
-                validate_min_max,
-                key=CONF_NAME,
-            ),
-            cv.Optional(CONF_REPETITIONS_NUMBER): cv.maybe_simple_value(
-                number.number_schema(
-                    SprinklerControllerNumber, entity_category=ENTITY_CATEGORY_CONFIG
-                )
-                .extend(
-                    {
-                        cv.Optional(CONF_INITIAL_VALUE, default=1): cv.positive_int,
-                        cv.Optional(CONF_MAX_VALUE, default=5): cv.positive_int,
-                        cv.Optional(CONF_MIN_VALUE, default=1): cv.positive_int,
-                        cv.Optional(CONF_RESTORE_VALUE, default=True): cv.boolean,
-                        cv.Optional(CONF_STEP, default=1): cv.positive_int,
-                        # cv.Optional(CONF_SET_ACTION): automation.validate_automation(
-                        #     single=True
-                        # ),
-                    }
-                )
-                .extend(cv.COMPONENT_SCHEMA),
-                validate_min_max,
-                key=CONF_NAME,
-            ),
+           
             cv.Required(CONF_VALVES): cv.ensure_list(_VALVE_SCHEMA),
         }
     )
