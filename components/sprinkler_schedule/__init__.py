@@ -50,20 +50,19 @@ _VALVE_SCHEMA = cv.Schema(
             )
             .extend(
                 {
-                    cv.Optional(CONF_INITIAL_VALUE, default=900): cv.positive_int,
-                    cv.Optional(CONF_MAX_VALUE, default=86400): cv.positive_int,
                     cv.Optional(CONF_MIN_VALUE, default=1): cv.positive_int,
-                    cv.Optional(CONF_RESTORE_VALUE, default=True): cv.boolean,
+                    cv.Optional(CONF_MAX_VALUE, default=86400): cv.positive_int,
                     cv.Optional(CONF_STEP, default=1): cv.positive_int,
-                    # cv.Optional(CONF_SET_ACTION): automation.validate_automation(
-                    #     single=True
-                    # ),
+                    cv.Optional(CONF_INITIAL_VALUE, default=900): cv.positive_int,
+                    cv.Optional(CONF_RESTORE_VALUE, default=True): cv.boolean,
                     cv.Optional(
                         CONF_UNIT_OF_MEASUREMENT, default=UNIT_SECOND
                     ): cv.one_of(UNIT_MINUTE, UNIT_SECOND, lower="True"),
+                    # cv.Optional(CONF_SET_ACTION): automation.validate_automation(
+                    #     single=True
+                    # ),
                 }
-            )
-            .extend(cv.COMPONENT_SCHEMA),
+            ),
             validate_min_max,
             key=CONF_NAME,
         ),
@@ -86,7 +85,7 @@ CONFIG_SCHEMA = (
                 ),
                 key=CONF_NAME,
             ),
-           
+
             cv.Required(CONF_VALVES): cv.ensure_list(_VALVE_SCHEMA),
         }
     )
@@ -122,6 +121,5 @@ async def to_code(config) -> None:
                            clock_var,
                            start_time_var,
                            )
-
 
     await cg.register_component(var, config)

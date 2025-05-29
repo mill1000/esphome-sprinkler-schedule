@@ -20,15 +20,17 @@ CONFIG_SCHEMA = (
             cv.GenerateID(CONF_SCHEDULE_ID): cv.use_id(SprinklerScheduleComponent),
             cv.Required(CONF_FREQUENCY_NUMBER): cv.maybe_simple_value(
                 number.number_schema(
-                    SprinklerControllerNumber, entity_category=ENTITY_CATEGORY_CONFIG
+                    SprinklerControllerNumber, 
+                    unit_of_measurement="d",
+                    entity_category=ENTITY_CATEGORY_CONFIG
                 )
                 .extend(
                     {
-                        cv.Optional(CONF_INITIAL_VALUE, default=2): cv.positive_int,
-                        cv.Optional(CONF_MAX_VALUE, default=7): cv.positive_int,
                         cv.Optional(CONF_MIN_VALUE, default=1): cv.positive_int,
-                        cv.Optional(CONF_RESTORE_VALUE, default=True): cv.boolean,
+                        cv.Optional(CONF_MAX_VALUE, default=7): cv.positive_int,
                         cv.Optional(CONF_STEP, default=1): cv.positive_int,
+                        cv.Optional(CONF_INITIAL_VALUE, default=2): cv.positive_int,
+                        cv.Optional(CONF_RESTORE_VALUE, default=True): cv.boolean,
                         # cv.Optional(CONF_SET_ACTION): automation.validate_automation(
                         #     single=True
                         # ),
@@ -39,15 +41,16 @@ CONFIG_SCHEMA = (
             ),
             cv.Optional(CONF_REPETITIONS_NUMBER): cv.maybe_simple_value(
                 number.number_schema(
-                    SprinklerControllerNumber, entity_category=ENTITY_CATEGORY_CONFIG
+                    SprinklerControllerNumber, 
+                    entity_category=ENTITY_CATEGORY_CONFIG
                 )
                 .extend(
                     {
-                        cv.Optional(CONF_INITIAL_VALUE, default=1): cv.positive_int,
-                        cv.Optional(CONF_MAX_VALUE, default=5): cv.positive_int,
                         cv.Optional(CONF_MIN_VALUE, default=1): cv.positive_int,
-                        cv.Optional(CONF_RESTORE_VALUE, default=True): cv.boolean,
+                        cv.Optional(CONF_MAX_VALUE, default=5): cv.positive_int,
                         cv.Optional(CONF_STEP, default=1): cv.positive_int,
+                        cv.Optional(CONF_INITIAL_VALUE, default=1): cv.positive_int,
+                        cv.Optional(CONF_RESTORE_VALUE, default=True): cv.boolean,
                         # cv.Optional(CONF_SET_ACTION): automation.validate_automation(
                         #     single=True
                         # ),
@@ -94,7 +97,7 @@ async def to_code(config) -> None:
             max_value=number_config[CONF_MAX_VALUE],
             step=number_config[CONF_STEP],
         )
-        
+
         cg.add(num.set_initial_value(number_config[CONF_INITIAL_VALUE]))
         cg.add(num.set_restore_value(number_config[CONF_RESTORE_VALUE]))
 
