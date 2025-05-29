@@ -3,6 +3,7 @@
 #include "esphome/components/datetime/time_entity.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/sprinkler/sprinkler.h"
+#include "esphome/components/switch/switch.h"
 #include "esphome/components/time/real_time_clock.h"
 #include "esphome/core/component.h"
 #include "esphome/core/time.h"
@@ -11,6 +12,7 @@ namespace esphome {
 namespace sprinkler_schedule {
 
 class SprinklerScheduleComponent : public Component {
+  SUB_SWITCH(enable);
 
   SUB_SENSOR(last_run);
   SUB_SENSOR(next_run);

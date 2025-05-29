@@ -128,14 +128,6 @@ CONFIG_SCHEMA = (
                 validate_min_max,
                 key=CONF_NAME,
             ),
-            cv.Optional(CONF_ENABLE_SWITCH): cv.maybe_simple_value(
-                switch.switch_schema(
-                    SprinklerControllerSwitch,
-                    entity_category=ENTITY_CATEGORY_CONFIG,
-                    default_restore_mode="RESTORE_DEFAULT_OFF",
-                ),
-                key=CONF_NAME,
-            ),
             cv.Required(CONF_VALVES): cv.ensure_list(_VALVE_SCHEMA),
         }
     )
@@ -176,11 +168,6 @@ async def to_code(config) -> None:
                            clock_var,
                            start_time_var,
                            )
-
-    if switch_config := config.get(CONF_ENABLE_SWITCH):
-        sw = await switch.new_switch(switch_config)
-        await cg.register_component(sw, switch_config)
-        cg.add(var.set_enable_switch(sw))
 
     # TODO
     # if CONF_REPEAT_NUMBER in sprinkler_controller:
