@@ -72,6 +72,18 @@ async def to_code(config) -> None:
             max_value=number_config[CONF_MAX_VALUE],
             step=number_config[CONF_STEP],
         )
+
+        cg.add(num.set_initial_value(number_config[CONF_INITIAL_VALUE]))
+        cg.add(num.set_restore_value(number_config[CONF_RESTORE_VALUE]))
+
+        # TODO?
+        # if CONF_SET_ACTION in number_config:
+        #     await automation.build_automation(
+        #         num.get_set_trigger(),
+        #         [(float, "x")],
+        #         number_config[CONF_SET_ACTION],
+        #     )
+
         # await cg.register_parented(sw, config[CONF_SCHEDULE_ID]) # TODO?
         cg.add(schedule.set_frequency_number(num))
 
@@ -82,5 +94,17 @@ async def to_code(config) -> None:
             max_value=number_config[CONF_MAX_VALUE],
             step=number_config[CONF_STEP],
         )
+        
+        cg.add(num.set_initial_value(number_config[CONF_INITIAL_VALUE]))
+        cg.add(num.set_restore_value(number_config[CONF_RESTORE_VALUE]))
+
+       # TODO?
+        # if CONF_SET_ACTION in number_config:
+        #     await automation.build_automation(
+        #         num.get_set_trigger(),
+        #         [(float, "x")],
+        #         number_config[CONF_SET_ACTION],
+        #     )
+
         # await cg.register_parented(sw, config[CONF_SCHEDULE_ID]) # TODO?
         cg.add(schedule.set_repititions_number(num))
