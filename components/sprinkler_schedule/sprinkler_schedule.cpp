@@ -92,7 +92,7 @@ void SprinklerScheduleComponent::run_() {
     const auto valve & = this->valves_[i];
 
     // Copy valve enable switch state to the controller
-    if (valve.enable_switch->state)
+    if (valve.enable_switch == nullptr || valve.enable_switch->state)
       controller_->enable_switch(i).turn_on();
     else
       controller_->enable_switch(i).turn_off();
