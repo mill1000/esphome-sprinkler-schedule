@@ -27,6 +27,22 @@ void SprinklerScheduleComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "Sprinkler Schedule:");
 }
 
+void update_next_run_timestamp_(std::time_t value) {
+  this->next_run_timestamp_ = value;
+
+  // Update sensor as needed
+  if (this->next_run_sensor_ && value != this->next_run_sensor_->raw_state)
+    this->next_run_sensor_->publish_state(value);
+}
+
+void update_last_run_timestamp_(std::time_t value) {
+  this->last_run_timestamp_ = value;
+
+  // Update sensor as needed
+  if (this->last_run_sensor_ && value != this->last_run_sensor_->raw_state)
+    this->last_run_sensor_->publish_state(value);
+}
+
 
 }  // namespace sprinkler_schedule
 }  // namespace esphome

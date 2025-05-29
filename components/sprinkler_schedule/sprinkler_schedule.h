@@ -45,6 +45,9 @@ class SprinklerScheduleComponent : public Component {
   std::time_t last_run_timestamp_;
   std::time_t next_run_timestamp_;
 
+  void update_next_run_timestamp_(std::time_t value);
+  void update_last_run_timestamp_(std::time_t value);
+
 constexpr uint32_t RESTORE_STATE_VERSION = 0xA1F0E60D;
 struct SprinklerScheduleRestoreState {
   std::time_t last_run_timestamp;
