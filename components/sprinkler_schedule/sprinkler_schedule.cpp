@@ -11,7 +11,7 @@ static const char *const TAG = "sprinkler_schedule";
 
 void SprinklerScheduleComponent::setup() {
   // Setup preferences
-  this->pref_ = global_preferences->make_preference<SprinklerScheduleRestoreState>(RESTORE_STATE_VERSION ^ this->get_object_id_hash());
+  this->pref_ = global_preferences->make_preference<SprinklerScheduleRestoreState>(RESTORE_STATE_VERSION ^ 0xFF00FF00); // TODO no hash for component?
 
   // Attempt to load previous state from flash
   SprinklerScheduleRestoreState restore_state = {};
@@ -53,24 +53,24 @@ void SprinklerScheduleComponent::update_estimated_duration_() {
   }
 
   // Apply repetitions
-  estimated_duration *= this->get_cycle_repetitions()
+  estimated_duration *= this->get_cycle_repetitions_();
 
   // Update sensor as needed
   if (this->estimated_duration_sensor_ && estimated_duration != this->estimated_duration_sensor_->raw_state)
     this->estimated_duration_sensor_->publish_state(estimated_duration);
 }
 
-void SprinklerScheduleComponent::get_cycle_repetitions() {
-  return this->repetitions_number == NULL ? 1 : this->repetitions_number->state;
+uint8_t SprinklerScheduleComponent::get_cycle_repetitions_() const {
+  return this->repetitions_number_ == NULL ? 1 : this->repetitions_number_->state;
 }
 
 
 void SprinklerScheduleComponent::calculate_next_run_(std::time_t from, uint32_t days) {
   // Convert to local time and adjust for start time and days parameter
   struct tm *date = std::localtime(&from);
-  date->tm_hour = 0;
-  date->tm_min = 0;
-  date->tm_sec = start_tod;
+  date->tm_hour = start_time_->hour;
+  date->tm_min = start_time_->minute;
+  date->tm_sec = start_time_->second;
   date->tm_mday += days;
 
   // Update timestamp
@@ -88,21 +88,21 @@ void SprinklerScheduleComponent::run_() {
     return;  // TODO set an error?
 
   // Copy schedule settings to controller
-  for (uint8_t i = 0; i < this->valves_.size()) {
-    const auto valve & = this->valves_[i];
+  for (uint8_t i = 0; i < this->valves_.size(); i++) {
+    const auto& valve = this->valves_[i];
 
     // Copy valve enable switch state to the controller
     if (valve.enable_switch == nullptr || valve.enable_switch->state)
-      controller_->enable_switch(i).turn_on();
+      controller_->enable_switch(i)->turn_on();
     else
-      controller_->enable_switch(i).turn_off();
+      controller_->enable_switch(i)->turn_off();
 
     // Copy valve run duration to controller
     controller_->set_valve_run_duration(i, valve.duration_number->state);
   }
 
-  // Copy repititions to controller
-  controller_->set_repeat(this->get_cycle_repetitions() - 1);
+  // Copy repetitions to controller
+  controller_->set_repeat(this->get_cycle_repetitions_() - 1);
 
   // Update last run timestamp
   this->update_last_run_timestamp_(now.timestamp);
@@ -111,7 +111,7 @@ void SprinklerScheduleComponent::run_() {
   controller_->start_full_cycle();
 
   // Calculate the next run time
-  this->calculate_next_run_(now.timestamp, this->frequency_number_.state);
+  this->calculate_next_run_(now.timestamp, this->frequency_number_->state);
 }
 
 }  // namespace sprinkler_schedule

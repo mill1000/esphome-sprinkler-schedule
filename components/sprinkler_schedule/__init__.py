@@ -247,7 +247,7 @@ async def _number_to_code(schedule, config) -> None:
         #     )
 
         # await cg.register_parented(sw, config[CONF_SCHEDULE_ID]) # TODO?
-        cg.add(schedule.set_repititions_number(num))
+        cg.add(schedule.set_repetitions_number(num))
 
 
 async def _switch_to_code(schedule, config) -> None:

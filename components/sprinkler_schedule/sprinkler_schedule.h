@@ -25,14 +25,14 @@ class SprinklerScheduleComponent : public Component {
   SUB_NUMBER(frequency);
  public:
   struct Valve {
-    const SprinklerControllerSwitch* enable_switch;
-    const SprinklerControllerNumber* duration_number;
+    const sprinkler::SprinklerControllerSwitch* enable_switch;
+    const sprinkler::SprinklerControllerNumber* duration_number;
   };
 
   SprinklerScheduleComponent(
       sprinkler::Sprinkler* controller,
-      const time::RealTimeClock* clock,
-      datetime::TimeEntity* start_time) : controller_(controller),
+      time::RealTimeClock* clock,
+      SprinklerScheduleTime* start_time) : controller_(controller),
                                           clock_(clock),
                                           start_time_(start_time) {}
 
@@ -40,13 +40,13 @@ class SprinklerScheduleComponent : public Component {
   void loop() override;
   void dump_config() override;
 
-  void add_valve(const SprinklerControllerSwitch* enable_sw, const SprinklerControllerNumber* duration_num) { this->valves_.push_back({enable_sw, duration_num}) }
+  void add_valve(const sprinkler::SprinklerControllerSwitch* enable_sw, const sprinkler::SprinklerControllerNumber* duration_num) { this->valves_.push_back({enable_sw, duration_num}); }
 
  protected:
   ESPPreferenceObject pref_;
 
   sprinkler::Sprinkler* controller_ = {nullptr};
-  const time::RealTimeClock* clock_ = {nullptr};
+  time::RealTimeClock* clock_ = {nullptr}; // TODO can't make const?
   SprinklerScheduleTime* start_time_ = {nullptr};
 
   std::time_t last_run_timestamp_;
@@ -58,10 +58,10 @@ class SprinklerScheduleComponent : public Component {
   void update_last_run_timestamp_(std::time_t value);
   void update_estimated_duration_();
 
-  void get_cycle_repetitions_() const;
+  uint8_t get_cycle_repetitions_() const;
 
   void calculate_next_run_(std::time_t from, uint32_t days);
-  void run_(const ESPTime& now);
+  void run_();
 };
 
 constexpr uint32_t RESTORE_STATE_VERSION = 0xA1F0E60D;
