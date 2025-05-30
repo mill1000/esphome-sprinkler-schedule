@@ -65,7 +65,7 @@ uint8_t SprinklerScheduleComponent::get_cycle_repetitions_() const {
 }
 
 
-void SprinklerScheduleComponent::calculate_next_run_(std::time_t from, uint32_t days) {
+std::time_t SprinklerScheduleComponent::calculate_next_run_(std::time_t from, uint32_t days) const {
   // Convert to local time and adjust for start time and days parameter
   struct tm *date = std::localtime(&from);
   date->tm_hour = start_time_->hour;
@@ -74,7 +74,7 @@ void SprinklerScheduleComponent::calculate_next_run_(std::time_t from, uint32_t 
   date->tm_mday += days;
 
   // Update timestamp
-  this->update_next_run_timestamp_(std::mktime(date));
+  return std::mktime(date);
 }
 
 void SprinklerScheduleComponent::run_() {
@@ -111,7 +111,9 @@ void SprinklerScheduleComponent::run_() {
   controller_->start_full_cycle();
 
   // Calculate the next run time
-  this->calculate_next_run_(now.timestamp, this->frequency_number_->state);
+  const auto next_run = this->calculate_next_run_(now.timestamp, this->frequency_number_->state);
+
+  this->update_next_run_timestamp_(next_run);
 }
 
 }  // namespace sprinkler_schedule

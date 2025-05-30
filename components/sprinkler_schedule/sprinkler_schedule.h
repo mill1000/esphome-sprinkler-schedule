@@ -60,7 +60,7 @@ class SprinklerScheduleComponent : public Component {
 
   uint8_t get_cycle_repetitions_() const;
 
-  void calculate_next_run_(std::time_t from, uint32_t days);
+  std::time_t calculate_next_run_(std::time_t from, uint32_t days) const;
   void run_();
 };
 
