@@ -37,21 +37,24 @@ class SprinklerScheduleComponent : public Component {
     const sprinkler::SprinklerControllerNumber* duration_number;
   };
 
-  SprinklerScheduleComponent(
-      sprinkler::Sprinkler* controller,
-      time::RealTimeClock* clock,
-      SprinklerScheduleTime* start_time) : controller_(controller),
-                                           clock_(clock),
-                                           start_time_(start_time) {
+  SprinklerScheduleComponent(sprinkler::Sprinkler* controller,
+                             time::RealTimeClock* clock,
+                             SprinklerScheduleTime* start_time) : controller_(controller),
+                                                                  clock_(clock),
+                                                                  start_time_(start_time) {
   }
 
   void setup() override;
   void loop() override;
   void dump_config() override;
 
-  void add_valve(const sprinkler::SprinklerControllerSwitch* enable_sw, const sprinkler::SprinklerControllerNumber* duration_num) { this->valves_.push_back({enable_sw, duration_num}); }
+  void add_valve(const sprinkler::SprinklerControllerSwitch* enable_sw,
+                 const sprinkler::SprinklerControllerNumber* duration_num) {
+    this->valves_.push_back({enable_sw, duration_num});
+  }
 
-  void maybe_run();
+  void on_start_time();
+
  protected:
   ESPPreferenceObject pref_;
 
@@ -120,12 +123,18 @@ class SprinklerScheduleTime : public datetime::TimeEntity{
 
 class ScheduleOnTimeTrigger : public datetime::OnTimeTrigger {
  public:
-  ScheduleOnTimeTrigger( SprinklerScheduleComponent* schedule) : schedule_(schedule) {}
+  ScheduleOnTimeTrigger(SprinklerScheduleComponent* schedule) : schedule_(schedule) {}
 
-  void trigger() override { this -> schedule_->maybe_run(); };
+  void trigger() {
+    // Check if schedule should run
+    this->schedule_->on_start_time();
+
+    // Call original trigger in case user defined an automation
+    OnTimeTrigger::trigger();
+  };
 
  protected:
-   SprinklerScheduleComponent* schedule_;
+  SprinklerScheduleComponent* schedule_;
 };
 
 }  // namespace sprinkler_schedule

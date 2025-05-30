@@ -29,6 +29,7 @@ void SprinklerScheduleComponent::setup() {
 }
 
 void SprinklerScheduleComponent::loop() {
+  // Update trigger
   this->start_time_trigger_->loop();
 }
 
@@ -46,7 +47,7 @@ void SprinklerScheduleComponent::dump_config() {
   LOG_NUMBER("  ", "Repetitions Number", this->repetitions_number_);
 }
 
-void SprinklerScheduleComponent::maybe_run() {
+void SprinklerScheduleComponent::on_start_time() {
   // Ignore if disabled
   if (this->enable_switch_ != nullptr && !this->enable_switch_->state)
     return;
