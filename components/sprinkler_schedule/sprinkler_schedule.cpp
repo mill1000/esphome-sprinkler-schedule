@@ -24,8 +24,12 @@ void SprinklerScheduleComponent::setup() {
   this->start_time_->setup();
 
   // Setup schedule on time trigger
-  this->start_time_trigger_ = new ScheduleOnTimeTrigger(this);
+  this->start_time_trigger_ = new ScheduleOnTimeTrigger();
   this->start_time_trigger_->set_parent((datetime::TimeEntity *)this->start_time_);
+  this->start_time_trigger_->set_callback([this]() { this->on_start_time_(); });
+
+  // Configure on time set callback
+  this->start_time_->set_callback([this]() { this->on_start_time_set_(); });
 }
 
 void SprinklerScheduleComponent::loop() {
@@ -52,7 +56,28 @@ void SprinklerScheduleComponent::dump_config() {
   LOG_NUMBER("  ", "Repetitions Number", this->repetitions_number_);
 }
 
-void SprinklerScheduleComponent::on_start_time() {
+void SprinklerScheduleComponent::on_start_time_set_() {
+  // Grab current time from clock
+  const ESPTime &now = this->clock_->now();
+
+  // Don't run if we're lacking a valid clock
+  if (!now.is_valid())
+    return;  // TODO set an error?
+
+  // Use previous run if set, otherwise use current time
+  auto from_time = this->last_run_timestamp_ ? this->last_run_timestamp_ : now.timestamp;
+
+  // Calculate the next run time
+  auto next = this->calculate_next_run_(from_time, this->frequency_number_->state);
+
+  // If next run is in the past, schedule for tomorrow
+  if (next < now.timestamp)
+    next = this->calculate_next_run_(from_time, 1);
+
+  this->next_run_timestamp_ = next;
+}
+
+void SprinklerScheduleComponent::on_start_time_() {
   // Ignore if disabled
   if (!this->is_enabled_())
     return;

@@ -53,8 +53,6 @@ class SprinklerScheduleComponent : public Component {
     this->valves_.push_back({enable_sw, duration_num});
   }
 
-  void on_start_time();
-
  protected:
   ESPPreferenceObject pref_;
 
@@ -67,6 +65,9 @@ class SprinklerScheduleComponent : public Component {
   std::time_t next_run_timestamp_;
 
   std::vector<Valve> valves_;
+
+  void on_start_time_();
+  void on_start_time_set_();
 
   void update_timestamp_sensor_(sensor::Sensor* sensor, std::time_t time);
 
@@ -81,13 +82,11 @@ class SprinklerScheduleComponent : public Component {
   void run_(const ESPTime& now);
 };
 
-// TODO should inherit from component?
-// Do we register this? Should schedule handle setup/loop calls?
 class SprinklerScheduleTime : public datetime::TimeEntity {
  public:
-  void set_initial_value(ESPTime initial_value) { this->initial_value_ = initial_value; }
+  void set_callback(std::function<void()> callback) { this->on_time_set_ = callback; }
 
-  // TODO when start time is updated we need to update schedule next run and its sensor
+  void set_initial_value(ESPTime initial_value) { this->initial_value_ = initial_value; }
 
   void setup() {
     // Attempt to load previous value from flash
@@ -112,6 +111,10 @@ class SprinklerScheduleTime : public datetime::TimeEntity {
     this->second_ = call.get_second().value_or(this->second_);
     this->publish_state();
 
+    // Call callback
+    if (this->on_time_set_)
+      this->on_time_set_();
+
     // Save value to flash for restore
     datetime::TimeEntityRestoreState temp = {
         .hour = this->hour_,
@@ -124,22 +127,24 @@ class SprinklerScheduleTime : public datetime::TimeEntity {
  protected:
   ESPPreferenceObject pref_;
   ESPTime initial_value_{};
+  std::function<void()> on_time_set_;
 };
 
 class ScheduleOnTimeTrigger : public datetime::OnTimeTrigger {
  public:
-  ScheduleOnTimeTrigger(SprinklerScheduleComponent* schedule) : schedule_(schedule) {}
+  void set_callback(std::function<void()> callback) { this->on_time_ = callback; }
 
   void trigger() {
-    // Check if schedule should run
-    this->schedule_->on_start_time();
+    // Call callback
+    if (this->on_time_)
+      this->on_time_();
 
     // Call original trigger in case user defined an automation
     OnTimeTrigger::trigger();
   };
 
  protected:
-  SprinklerScheduleComponent* schedule_;
+  std::function<void()> on_time_;
 };
 
 }  // namespace sprinkler_schedule
