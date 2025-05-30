@@ -13,6 +13,7 @@ namespace esphome {
 namespace sprinkler_schedule {
 
 class SprinklerScheduleTime;
+class ScheduleOnTimeTrigger;
 
 class SprinklerScheduleComponent : public Component {
   SUB_SWITCH(enable);
@@ -35,7 +36,8 @@ class SprinklerScheduleComponent : public Component {
       time::RealTimeClock* clock,
       SprinklerScheduleTime* start_time) : controller_(controller),
                                            clock_(clock),
-                                           start_time_(start_time) {}
+                                           start_time_(start_time) {
+  }
 
   void setup() override;
   void loop() override;
@@ -43,12 +45,14 @@ class SprinklerScheduleComponent : public Component {
 
   void add_valve(const sprinkler::SprinklerControllerSwitch* enable_sw, const sprinkler::SprinklerControllerNumber* duration_num) { this->valves_.push_back({enable_sw, duration_num}); }
 
+  void maybe_run();
  protected:
   ESPPreferenceObject pref_;
 
   sprinkler::Sprinkler* controller_ = {nullptr};
   time::RealTimeClock* clock_ = {nullptr};  // TODO can't make const?
   SprinklerScheduleTime* start_time_ = {nullptr};
+  ScheduleOnTimeTrigger* start_time_trigger_;
 
   std::time_t last_run_timestamp_;
   std::time_t next_run_timestamp_;
@@ -62,7 +66,7 @@ class SprinklerScheduleComponent : public Component {
   uint8_t get_cycle_repetitions_() const;
 
   std::time_t calculate_next_run_(std::time_t from, uint32_t days) const;
-  void run_();
+  void run_(const ESPTime& now);
 };
 
 constexpr uint32_t RESTORE_STATE_VERSION = 0xA1F0E60D;
@@ -114,6 +118,16 @@ class SprinklerScheduleTime : public datetime::TimeEntity, public Component {
  protected:
   ESPPreferenceObject pref_;
   ESPTime initial_value_{};
+};
+
+class ScheduleOnTimeTrigger : public datetime::OnTimeTrigger {
+ public:
+  ScheduleOnTimeTrigger( SprinklerScheduleComponent* schedule) : schedule_(schedule) {}
+
+  void trigger() override { this -> schedule_->maybe_run(); };
+
+ protected:
+   SprinklerScheduleComponent* schedule_;
 };
 
 }  // namespace sprinkler_schedule

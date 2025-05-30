@@ -19,13 +19,33 @@ void SprinklerScheduleComponent::setup() {
     this->last_run_timestamp_ = restore_state.last_run_timestamp;
     this->next_run_timestamp_ = restore_state.next_run_timestamp;
   }
+
+  this->start_time_trigger_ = new ScheduleOnTimeTrigger(this);
+  this->start_time_trigger_->set_parent((datetime::TimeEntity*)this->start_time_);
 }
 
 void SprinklerScheduleComponent::loop() {
+  this->start_time_trigger_->loop();
 }
 
 void SprinklerScheduleComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "Sprinkler Schedule:");
+}
+
+void SprinklerScheduleComponent::maybe_run() {
+  // Ignore if disabled
+  if (this->enable_switch_ != nullptr && !this->enable_switch_->state)
+    return;
+
+  // Grab current time from clock
+  const ESPTime &now = this->clock_->now();
+
+  // Ignore if clock is invalid or no run is scheduled
+  if (!now.is_valid() || this->next_run_timestamp_ == 0)
+    return;
+
+  if (now.timestamp >= this->next_run_timestamp_)
+    this->run_(now);
 }
 
 void SprinklerScheduleComponent::update_next_run_timestamp_(std::time_t value) {
@@ -72,19 +92,19 @@ std::time_t SprinklerScheduleComponent::calculate_next_run_(std::time_t from, ui
   date->tm_sec = start_time_->second;
   date->tm_mday += days;
 
-  // Update timestamp
+  // Convert to timestamp
   return std::mktime(date);
 }
 
-void SprinklerScheduleComponent::run_() {
+void SprinklerScheduleComponent::run_(const ESPTime &now) {
   // TODO controller must be in idle
 
-  // Grab current time from clock
-  const ESPTime &now = this->clock_->now();
+  // // Grab current time from clock
+  // const ESPTime &now = this->clock_->now();
 
-  // Don't run if we're lacking a valid clock
-  if (!now.is_valid())
-    return;  // TODO set an error?
+  // // Don't run if we're lacking a valid clock
+  // if (!now.is_valid())
+  //   return;  // TODO set an error?
 
   // Copy schedule settings to controller
   for (uint8_t i = 0; i < this->valves_.size(); i++) {
@@ -111,7 +131,6 @@ void SprinklerScheduleComponent::run_() {
 
   // Calculate the next run time
   const auto next_run = this->calculate_next_run_(now.timestamp, this->frequency_number_->state);
-
   this->update_next_run_timestamp_(next_run);
 }
 
