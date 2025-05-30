@@ -82,7 +82,7 @@ void SprinklerScheduleComponent::on_start_time_() {
     this->run_(now);
 }
 
-void SprinklerScheduleComponent::update_timestamp_sensor_(sensor::Sensor *sensor, std::time_t time, bool ignore_enabled = false) {
+void SprinklerScheduleComponent::update_timestamp_sensor_(sensor::Sensor *sensor, std::time_t time, bool ignore_enabled) {
   // Only update sensor if it exists
   if (sensor == nullptr)
     return;
