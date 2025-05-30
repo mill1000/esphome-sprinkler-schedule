@@ -15,6 +15,12 @@ namespace sprinkler_schedule {
 class SprinklerScheduleTime;
 class ScheduleOnTimeTrigger;
 
+constexpr uint32_t RESTORE_STATE_VERSION = 0xA1F0E60D;
+struct SprinklerScheduleRestoreState {
+  std::time_t last_run_timestamp;
+  std::time_t next_run_timestamp;
+} __attribute__((packed));
+
 class SprinklerScheduleComponent : public Component {
   SUB_SWITCH(enable);
 
@@ -69,13 +75,9 @@ class SprinklerScheduleComponent : public Component {
   void run_(const ESPTime& now);
 };
 
-constexpr uint32_t RESTORE_STATE_VERSION = 0xA1F0E60D;
-struct SprinklerScheduleRestoreState {
-  std::time_t last_run_timestamp;
-  std::time_t next_run_timestamp;
-} __attribute__((packed));
-
-class SprinklerScheduleTime : public datetime::TimeEntity, public Component {
+// TODO should inherit from component?
+// Do we register this? Should schedule handle setup/loop calls?
+class SprinklerScheduleTime : public datetime::TimeEntity{
  public:
   void set_initial_value(ESPTime initial_value) { this->initial_value_ = initial_value; }
 
@@ -110,10 +112,6 @@ class SprinklerScheduleTime : public datetime::TimeEntity, public Component {
     };
     this->pref_.save(&temp);
   }
-
-  // void dump_config() {
-  //   LOG_DATETIME_TIME("", "Start Time", this);
-  // }
 
  protected:
   ESPPreferenceObject pref_;

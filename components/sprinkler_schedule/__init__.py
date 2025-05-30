@@ -259,7 +259,6 @@ async def _switch_to_code(schedule, config) -> None:
 
 async def _start_time_to_code(config) -> Pvariable:
     var = await datetime.new_datetime(config)
-    await cg.register_component(var, config)
 
     if initial_value := config.get(CONF_INITIAL_VALUE):
         time_struct = cg.StructInitializer(

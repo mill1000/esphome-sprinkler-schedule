@@ -20,6 +20,10 @@ void SprinklerScheduleComponent::setup() {
     this->next_run_timestamp_ = restore_state.next_run_timestamp;
   }
 
+  // Call start time setup manually
+  this->start_time_->setup();
+
+  // Setup schedule on time trigger
   this->start_time_trigger_ = new ScheduleOnTimeTrigger(this);
   this->start_time_trigger_->set_parent((datetime::TimeEntity*)this->start_time_);
 }
@@ -30,6 +34,16 @@ void SprinklerScheduleComponent::loop() {
 
 void SprinklerScheduleComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "Sprinkler Schedule:");
+  
+  LOG_SWITCH("  ", "Enable Switch", this->enable_switch_);
+  LOG_DATETIME_TIME("  ", "Start Time", this->start_time_);
+
+  LOG_SENSOR("  ", "Last Run Sensor", this->last_run_sensor_);
+  LOG_SENSOR("  ", "Next Run Sensor", this->next_run_sensor_);
+  LOG_SENSOR("  ", "Estimated Duration Sensor", this->estimated_duration_sensor_);
+
+  LOG_NUMBER("  ", "Frequency Number", this->frequency_number_);
+  LOG_NUMBER("  ", "Repetitions Number", this->repetitions_number_);
 }
 
 void SprinklerScheduleComponent::maybe_run() {
