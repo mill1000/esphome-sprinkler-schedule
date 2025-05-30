@@ -106,16 +106,6 @@ void SprinklerScheduleComponent::update_timestamp_sensor_(sensor::Sensor *sensor
     sensor->publish_state(published_value);
 }
 
-// void SprinklerScheduleComponent::update_next_run_timestamp_(std::time_t value) {
-//   this->next_run_timestamp_ = value;
-//   this->update_timestamp_sensor_(this->next_run_sensor_, value);
-// }
-
-// void SprinklerScheduleComponent::update_last_run_timestamp_(std::time_t value) {
-//   this->last_run_timestamp_ = value;
-//   this->update_timestamp_sensor_(this->last_run_sensor_, value);
-// }
-
 void SprinklerScheduleComponent::update_estimated_duration_sensor_() {
   if (this->estimated_duration_sensor_ == nullptr)
     return;
@@ -153,13 +143,6 @@ std::time_t SprinklerScheduleComponent::calculate_next_run_(std::time_t from, ui
 
 void SprinklerScheduleComponent::run_(const ESPTime &now) {
   // TODO controller must be in idle
-
-  // // Grab current time from clock
-  // const ESPTime &now = this->clock_->now();
-
-  // // Don't run if we're lacking a valid clock
-  // if (!now.is_valid())
-  //   return;  // TODO set an error?
 
   // Copy schedule settings to controller
   for (uint8_t i = 0; i < this->valves_.size(); i++) {
