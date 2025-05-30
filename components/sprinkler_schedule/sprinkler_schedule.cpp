@@ -24,7 +24,7 @@ void SprinklerScheduleComponent::setup() {
   this->start_time_->setup();
 
   // Add callback to start time which will recalculate the next run time
-  this->start_time_->set_callback([this]() { this->recalculate_next_run_(); });
+  this->start_time_->add_on_state_callback([this]() { this->recalculate_next_run_(); });
 
   // Setup schedule on time trigger
   this->start_time_trigger_ = new ScheduleOnTimeTrigger();

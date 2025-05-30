@@ -81,8 +81,6 @@ class SprinklerScheduleComponent : public Component {
 
 class SprinklerScheduleTime : public datetime::TimeEntity {
  public:
-  void set_callback(std::function<void()> callback) { this->on_time_set_ = callback; }
-
   void set_initial_value(ESPTime initial_value) { this->initial_value_ = initial_value; }
 
   void setup() {
@@ -108,10 +106,6 @@ class SprinklerScheduleTime : public datetime::TimeEntity {
     this->second_ = call.get_second().value_or(this->second_);
     this->publish_state();
 
-    // Call callback
-    if (this->on_time_set_)
-      this->on_time_set_();
-
     // Save value to flash for restore
     datetime::TimeEntityRestoreState temp = {
         .hour = this->hour_,
@@ -124,7 +118,6 @@ class SprinklerScheduleTime : public datetime::TimeEntity {
  protected:
   ESPPreferenceObject pref_;
   ESPTime initial_value_{};
-  std::function<void()> on_time_set_;
 };
 
 class ScheduleOnTimeTrigger : public datetime::OnTimeTrigger {
