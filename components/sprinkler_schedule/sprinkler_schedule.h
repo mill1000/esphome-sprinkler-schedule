@@ -67,7 +67,6 @@ class SprinklerScheduleComponent : public Component {
   std::vector<Valve> valves_;
 
   void on_start_time_();
-  void on_start_time_set_();
 
   void update_timestamp_sensor_(sensor::Sensor* sensor, std::time_t time);
   void update_estimated_duration_sensor_();
@@ -75,6 +74,7 @@ class SprinklerScheduleComponent : public Component {
   bool is_enabled_() const { return (this->enable_switch_ == nullptr || this->enable_switch_->state); }
   uint8_t get_cycle_repetitions_() const;
 
+  void recalculate_next_run_();
   std::time_t calculate_next_run_(std::time_t from, uint32_t days) const;
   void run_(const ESPTime& now);
 };
