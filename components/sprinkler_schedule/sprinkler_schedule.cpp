@@ -31,6 +31,11 @@ void SprinklerScheduleComponent::setup() {
 void SprinklerScheduleComponent::loop() {
   // Update trigger
   this->start_time_trigger_->loop();
+
+  // Publish any updated sensor states
+  this->update_timestamp_sensor_(this->last_run_sensor_, this->last_run_timestamp_);
+  this->update_timestamp_sensor_(this->next_run_sensor_, this->next_run_timestamp_);
+  this->update_estimated_duration_sensor_();
 }
 
 void SprinklerScheduleComponent::dump_config() {
@@ -76,20 +81,23 @@ void SprinklerScheduleComponent::update_timestamp_sensor_(sensor::Sensor *sensor
     sensor->publish_state(published_value);
 }
 
-void SprinklerScheduleComponent::update_next_run_timestamp_(std::time_t value) {
-  this->next_run_timestamp_ = value;
-  this->update_timestamp_sensor_(this->next_run_sensor_, value);
-}
+// void SprinklerScheduleComponent::update_next_run_timestamp_(std::time_t value) {
+//   this->next_run_timestamp_ = value;
+//   this->update_timestamp_sensor_(this->next_run_sensor_, value);
+// }
 
-void SprinklerScheduleComponent::update_last_run_timestamp_(std::time_t value) {
-  this->last_run_timestamp_ = value;
-  this->update_timestamp_sensor_(this->last_run_sensor_, value);
-}
+// void SprinklerScheduleComponent::update_last_run_timestamp_(std::time_t value) {
+//   this->last_run_timestamp_ = value;
+//   this->update_timestamp_sensor_(this->last_run_sensor_, value);
+// }
 
-void SprinklerScheduleComponent::update_estimated_duration_() {
+void SprinklerScheduleComponent::update_estimated_duration_sensor_() {
+  if (this->estimated_duration_sensor_ == nullptr)
+    return;
+
+  // Sum run duration of all enabled valves
   auto estimated_duration = 0;
   for (const auto &valve : this->valves_) {
-    // Sum run duration of all enabled valves
     if (valve.enable_switch == nullptr || valve.enable_switch->state)
       estimated_duration += valve.duration_number->state;
   }
@@ -98,7 +106,7 @@ void SprinklerScheduleComponent::update_estimated_duration_() {
   estimated_duration *= this->get_cycle_repetitions_();
 
   // Update sensor as needed
-  if (this->estimated_duration_sensor_ && estimated_duration != this->estimated_duration_sensor_->raw_state)
+  if (estimated_duration != this->estimated_duration_sensor_->raw_state)
     this->estimated_duration_sensor_->publish_state(estimated_duration);
 }
 
@@ -146,14 +154,13 @@ void SprinklerScheduleComponent::run_(const ESPTime &now) {
   controller_->set_repeat(this->get_cycle_repetitions_() - 1);
 
   // Update last run timestamp
-  this->update_last_run_timestamp_(now.timestamp);
+  this->last_run_timestamp_ = now.timestamp;
 
   // Run the cycle
   controller_->start_full_cycle();
 
   // Calculate the next run time
-  const auto next_run = this->calculate_next_run_(now.timestamp, this->frequency_number_->state);
-  this->update_next_run_timestamp_(next_run);
+  this->next_run_timestamp_ = this->calculate_next_run_(now.timestamp, this->frequency_number_->state);
 }
 
 }  // namespace sprinkler_schedule
