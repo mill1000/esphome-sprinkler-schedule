@@ -23,6 +23,7 @@ class SprinklerScheduleComponent : public Component {
 
   SUB_NUMBER(repetitions);
   SUB_NUMBER(frequency);
+
  public:
   struct Valve {
     const sprinkler::SprinklerControllerSwitch* enable_switch;
@@ -33,8 +34,8 @@ class SprinklerScheduleComponent : public Component {
       sprinkler::Sprinkler* controller,
       time::RealTimeClock* clock,
       SprinklerScheduleTime* start_time) : controller_(controller),
-                                          clock_(clock),
-                                          start_time_(start_time) {}
+                                           clock_(clock),
+                                           start_time_(start_time) {}
 
   void setup() override;
   void loop() override;
@@ -46,7 +47,7 @@ class SprinklerScheduleComponent : public Component {
   ESPPreferenceObject pref_;
 
   sprinkler::Sprinkler* controller_ = {nullptr};
-  time::RealTimeClock* clock_ = {nullptr}; // TODO can't make const?
+  time::RealTimeClock* clock_ = {nullptr};  // TODO can't make const?
   SprinklerScheduleTime* start_time_ = {nullptr};
 
   std::time_t last_run_timestamp_;

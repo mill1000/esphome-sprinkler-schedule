@@ -11,7 +11,7 @@ static const char *const TAG = "sprinkler_schedule";
 
 void SprinklerScheduleComponent::setup() {
   // Setup preferences
-  this->pref_ = global_preferences->make_preference<SprinklerScheduleRestoreState>(RESTORE_STATE_VERSION ^ 0xFF00FF00); // TODO no hash for component?
+  this->pref_ = global_preferences->make_preference<SprinklerScheduleRestoreState>(RESTORE_STATE_VERSION ^ 0xFF00FF00);  // TODO no hash for component?
 
   // Attempt to load previous state from flash
   SprinklerScheduleRestoreState restore_state = {};
@@ -64,7 +64,6 @@ uint8_t SprinklerScheduleComponent::get_cycle_repetitions_() const {
   return this->repetitions_number_ == NULL ? 1 : this->repetitions_number_->state;
 }
 
-
 std::time_t SprinklerScheduleComponent::calculate_next_run_(std::time_t from, uint32_t days) const {
   // Convert to local time and adjust for start time and days parameter
   struct tm *date = std::localtime(&from);
@@ -89,7 +88,7 @@ void SprinklerScheduleComponent::run_() {
 
   // Copy schedule settings to controller
   for (uint8_t i = 0; i < this->valves_.size(); i++) {
-    const auto& valve = this->valves_[i];
+    const auto &valve = this->valves_[i];
 
     // Copy valve enable switch state to the controller
     if (valve.enable_switch == nullptr || valve.enable_switch->state)
