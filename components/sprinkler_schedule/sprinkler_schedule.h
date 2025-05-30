@@ -68,7 +68,7 @@ class SprinklerScheduleComponent : public Component {
 
   void on_start_time_();
 
-  void update_timestamp_sensor_(sensor::Sensor* sensor, std::time_t time);
+  void update_timestamp_sensor_(sensor::Sensor* sensor, std::time_t time, bool ignore_enabled = false);
   void update_estimated_duration_sensor_();
 
   bool is_enabled_() const { return (this->enable_switch_ == nullptr || this->enable_switch_->state); }

@@ -40,7 +40,7 @@ void SprinklerScheduleComponent::loop() {
   this->start_time_trigger_->loop();
 
   // Publish any updated sensor states
-  this->update_timestamp_sensor_(this->last_run_sensor_, this->last_run_timestamp_);
+  this->update_timestamp_sensor_(this->last_run_sensor_, this->last_run_timestamp_, true);
   this->update_timestamp_sensor_(this->next_run_sensor_, this->next_run_timestamp_);
   this->update_estimated_duration_sensor_();
 }
@@ -75,13 +75,13 @@ void SprinklerScheduleComponent::on_start_time_() {
     this->run_(now);
 }
 
-void SprinklerScheduleComponent::update_timestamp_sensor_(sensor::Sensor *sensor, std::time_t time) {
+void SprinklerScheduleComponent::update_timestamp_sensor_(sensor::Sensor *sensor, std::time_t time, bool ignore_enabled = false) {
   // Only update sensor if it exists
   if (sensor == nullptr)
     return;
 
   // Publish NAN/Unknown if schedule is disabled or value is not set
-  float published_value = (this->is_enabled_() && time > 0) ? time : NAN;
+  float published_value = ((ignore_enabled || this->is_enabled_()) && time > 0) ? time : NAN;
 
   // Publish state if necessary
   if (published_value != sensor->raw_state)
