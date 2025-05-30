@@ -1,0 +1,252 @@
+external_components:
+  # Pull from local folder
+  - source: /components
+    components: [sprinkler_schedule]
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+    timezone: America/Denver
+
+switch:
+  - platform: gpio
+    pin: GPIO16 # Glitches on reboot
+    id: relay_1
+    name: Relay 1
+    entity_category: diagnostic
+
+  - platform: gpio
+    pin: GPIO14
+    id: relay_2
+    name: Relay 2
+    entity_category: diagnostic
+
+  - platform: gpio
+    pin: GPIO12
+    id: relay_3
+    name: Relay 3
+    entity_category: diagnostic
+
+  - platform: gpio
+    pin: GPIO13
+    id: relay_4
+    name: Relay 4
+    entity_category: diagnostic
+
+  - platform: gpio
+    pin: GPIO15
+    id: relay_5
+    name: Relay 5
+    entity_category: diagnostic
+
+  - platform: gpio
+    pin: GPIO00 # Glitches on reboot
+    id: relay_6
+    name: Relay 6
+    entity_category: diagnostic
+
+  - platform: gpio
+    pin: GPIO04
+    id: relay_7
+    name: Relay 7
+    entity_category: diagnostic
+
+  - platform: gpio
+    pin: GPIO05
+    id: relay_8
+    name: Relay 8
+    entity_category: diagnostic
+
+sprinkler:
+  - id: sprinkler_controller
+
+    main_switch:
+      name: Sprinklers
+      id: sprinklers_main_switch
+      restore_mode: RESTORE_DEFAULT_OFF
+      internal: true
+
+    auto_advance_switch:
+      name: Zone Auto Advance
+      restore_mode: RESTORE_DEFAULT_ON
+      icon: mdi:playlist-play
+
+    standby_switch:
+      name: Standby
+      icon: mdi:water-off
+
+    repeat_number:
+      name: Cycle Repeat
+      id: sprinkler_repeat
+      internal: true
+
+    valve_overlap: 2s
+    valves:
+      - valve_switch:
+          name: Zone 1 - Front Yard
+          icon: mdi:sprinkler
+
+        enable_switch:
+          name: Zone 1 - Enable
+          icon: mdi:timer-check
+          restore_mode: RESTORE_DEFAULT_OFF
+        valve_switch_id: relay_2
+        run_duration_number:
+          name: Zone 1 - Duration
+          id: valve_1_cycle_duration
+          step: 1
+          min_value: 0
+          max_value: 30
+          initial_value: 20
+          restore_value: true
+          unit_of_measurement: min
+          icon: mdi:timer
+
+      - valve_switch:
+          name: Zone 2 - Backyard North
+          icon: mdi:sprinkler
+        enable_switch:
+          name: Zone 2 - Enable
+          icon: mdi:timer-check
+          restore_mode: RESTORE_DEFAULT_OFF
+        valve_switch_id: relay_3
+        run_duration_number:
+          name: Zone 2 - Duration
+          id: valve_2_cycle_duration
+          step: 1
+          min_value: 0
+          max_value: 30
+          initial_value: 20
+          restore_value: true
+          unit_of_measurement: min
+          icon: mdi:timer
+
+      - valve_switch:
+          name: Zone 3 - Backyard South
+          icon: mdi:sprinkler
+        enable_switch:
+          name: Zone 3 - Enable
+          icon: mdi:timer-check
+          restore_mode: RESTORE_DEFAULT_OFF
+        valve_switch_id: relay_4
+        run_duration_number:
+          name: Zone 3 - Duration
+          id: valve_3_cycle_duration
+          step: 1
+          min_value: 0
+          max_value: 30
+          initial_value: 20
+          restore_value: true
+          unit_of_measurement: min
+          icon: mdi:timer
+
+sprinkler_schedule:
+  - id: schedule_a
+    controller_id: sprinkler_controller
+    start_time: 
+      name: Schedule Start Time
+      initial_value: "06:00:00"
+
+    # enable_switch:
+    #   id: enable_schedule
+    #   name: Enable Schedule
+    #   icon: mdi:calendar-remove
+    #   #optimistic: true
+
+    frequency_number:
+      name: Schedule Frequency
+      unit_of_measurement: d
+      icon: mdi:calendar-clock
+
+    repetitions_number:
+      name: Cycle Count
+      icon: mdi:water-sync
+
+    valves:
+      - enable_switch:
+          name: Zone 1 - Enable
+          icon: mdi:timer-check
+
+        run_duration_number:
+          name: Zone 1 - Duration
+          step: 1
+          min_value: 0
+          max_value: 30
+          initial_value: 20
+          unit_of_measurement: min
+          icon: mdi:timer
+
+      - enable_switch:
+          name: Zone 2 - Enable
+          icon: mdi:timer-check
+
+        run_duration_number:
+          name: Zone 2 - Duration
+          step: 1
+          min_value: 0
+          max_value: 30
+          initial_value: 20
+          unit_of_measurement: min
+          icon: mdi:timer
+
+
+      - enable_switch:
+          name: Zone 3 - Enable
+          icon: mdi:timer-check
+
+        run_duration_number:
+          name: Zone 3 - Duration
+          step: 1
+          min_value: 0
+          max_value: 30
+          initial_value: 20
+          unit_of_measurement: min
+          icon: mdi:timer
+
+  # - id: schedule_b
+  #   controller_id: sprinkler_controller
+  #   start_time: 
+  #     name: Schedule Start Time
+  #     initial_value: "06:00:00"
+
+  #   # enable_switch:
+  #   #   id: enable_schedule
+  #   #   name: Enable Schedule
+  #   #   icon: mdi:calendar-remove
+  #   #   #optimistic: true
+
+  #   frequency_number:
+  #     name: Schedule Frequency
+  #     unit_of_measurement: d
+  #     icon: mdi:calendar-clock
+
+  #   repetitions_number:
+  #     name: Cycle Count
+  #     icon: mdi:water-sync
+
+  #   valves:
+  #     - enable_switch:
+  #         name: Zone 1 - Enable
+  #         icon: mdi:timer-check
+
+  #       run_duration_number:
+  #         name: Zone 1 - Duration
+  #         step: 1
+  #         min_value: 0
+  #         max_value: 30
+  #         initial_value: 20
+  #         unit_of_measurement: min
+  #         icon: mdi:timer
+
+  #     - enable_switch:
+  #         name: Zone 2 - Enable
+  #         icon: mdi:timer-check
+
+  #       run_duration_number:
+  #         name: Zone 2 - Duration
+  #         step: 1
+  #         min_value: 0
+  #         max_value: 30
+  #         initial_value: 20
+  #         unit_of_measurement: min
+  #         icon: mdi:timer
