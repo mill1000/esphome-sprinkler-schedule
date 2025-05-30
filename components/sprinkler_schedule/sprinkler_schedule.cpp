@@ -25,7 +25,7 @@ void SprinklerScheduleComponent::setup() {
 
   // Setup schedule on time trigger
   this->start_time_trigger_ = new ScheduleOnTimeTrigger(this);
-  this->start_time_trigger_->set_parent((datetime::TimeEntity*)this->start_time_);
+  this->start_time_trigger_->set_parent((datetime::TimeEntity *)this->start_time_);
 }
 
 void SprinklerScheduleComponent::loop() {
@@ -35,7 +35,7 @@ void SprinklerScheduleComponent::loop() {
 
 void SprinklerScheduleComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "Sprinkler Schedule:");
-  
+
   LOG_SWITCH("  ", "Enable Switch", this->enable_switch_);
   LOG_DATETIME_TIME("  ", "Start Time", this->start_time_);
 
@@ -49,7 +49,7 @@ void SprinklerScheduleComponent::dump_config() {
 
 void SprinklerScheduleComponent::on_start_time() {
   // Ignore if disabled
-  if (this->enable_switch_ != nullptr && !this->enable_switch_->state)
+  if (!this->is_enabled_())
     return;
 
   // Grab current time from clock
@@ -63,20 +63,27 @@ void SprinklerScheduleComponent::on_start_time() {
     this->run_(now);
 }
 
+void SprinklerScheduleComponent::update_timestamp_sensor_(sensor::Sensor *sensor, std::time_t time) {
+  // Only update sensor if it exists
+  if (sensor == nullptr)
+    return;
+
+  // Publish NAN/Unknown if schedule is disabled or value is not set
+  float published_value = (this->is_enabled_() && time > 0) ? time : NAN;
+
+  // Publish state if necessary
+  if (published_value != sensor->raw_state)
+    sensor->publish_state(published_value);
+}
+
 void SprinklerScheduleComponent::update_next_run_timestamp_(std::time_t value) {
   this->next_run_timestamp_ = value;
-
-  // Update sensor as needed
-  if (this->next_run_sensor_ && value != this->next_run_sensor_->raw_state)
-    this->next_run_sensor_->publish_state(value);
+  this->update_timestamp_sensor_(this->next_run_sensor_, value);
 }
 
 void SprinklerScheduleComponent::update_last_run_timestamp_(std::time_t value) {
   this->last_run_timestamp_ = value;
-
-  // Update sensor as needed
-  if (this->last_run_sensor_ && value != this->last_run_sensor_->raw_state)
-    this->last_run_sensor_->publish_state(value);
+  this->update_timestamp_sensor_(this->last_run_sensor_, value);
 }
 
 void SprinklerScheduleComponent::update_estimated_duration_() {

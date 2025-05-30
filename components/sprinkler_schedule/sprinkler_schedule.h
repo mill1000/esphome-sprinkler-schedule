@@ -68,10 +68,13 @@ class SprinklerScheduleComponent : public Component {
 
   std::vector<Valve> valves_;
 
+  void update_timestamp_sensor_(sensor::Sensor* sensor, std::time_t time);
+
   void update_next_run_timestamp_(std::time_t value);
   void update_last_run_timestamp_(std::time_t value);
   void update_estimated_duration_();
 
+  bool is_enabled_() const { return (this->enable_switch_ == nullptr || this->enable_switch_->state); }
   uint8_t get_cycle_repetitions_() const;
 
   std::time_t calculate_next_run_(std::time_t from, uint32_t days) const;
@@ -80,9 +83,11 @@ class SprinklerScheduleComponent : public Component {
 
 // TODO should inherit from component?
 // Do we register this? Should schedule handle setup/loop calls?
-class SprinklerScheduleTime : public datetime::TimeEntity{
+class SprinklerScheduleTime : public datetime::TimeEntity {
  public:
   void set_initial_value(ESPTime initial_value) { this->initial_value_ = initial_value; }
+
+  // TODO when start time is updated we need to update schedule next run and its sensor
 
   void setup() {
     // Attempt to load previous value from flash
