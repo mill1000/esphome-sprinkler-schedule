@@ -122,7 +122,7 @@ class SprinklerScheduleTime : public datetime::TimeEntity {
 
 class ScheduleOnTimeTrigger : public datetime::OnTimeTrigger {
  public:
-  void set_callback(std::function<void()> callback) { this->on_time_ = callback; }
+  void set_on_time_callback(std::function<void()> callback) { this->on_time_ = callback; }
 
   void trigger() {
     // Call callback

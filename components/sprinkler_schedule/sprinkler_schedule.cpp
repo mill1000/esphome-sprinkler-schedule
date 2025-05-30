@@ -29,7 +29,7 @@ void SprinklerScheduleComponent::setup() {
   // Setup schedule on time trigger
   this->start_time_trigger_ = new ScheduleOnTimeTrigger();
   this->start_time_trigger_->set_parent((datetime::TimeEntity *)this->start_time_);
-  this->start_time_trigger_->set_callback([this]() { this->on_start_time_(); });
+  this->start_time_trigger_->set_on_time_callback([this]() { this->on_start_time_(); });
 
   // Add callback to frequency number which will recalculate the next run time
   this->frequency_number_->add_on_state_callback([this](float value) { this->recalculate_next_run_(); });
