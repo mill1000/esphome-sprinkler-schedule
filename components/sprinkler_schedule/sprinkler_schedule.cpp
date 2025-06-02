@@ -90,11 +90,16 @@ void SprinklerScheduleComponent::update_timestamp_sensor_(sensor::Sensor *sensor
     return;
 
   // Publish NAN/Unknown if schedule is disabled or value is not set
-  float published_value = ((ignore_enabled || this->is_enabled_()) && time > 0) ? time : NAN;
+  float new_value = ((ignore_enabled || this->is_enabled_()) && time > 0) ? time : NAN;
+  float old_value = sensor->raw_state;
+
+  // Don't publish if both values are NAN
+  if (isnan(new_value) && isnan(old_value))
+    return;
 
   // Publish state if necessary
-  if (published_value != sensor->raw_state)
-    sensor->publish_state(published_value);
+  if (new_value != old_value)
+    sensor->publish_state(new_value);
 }
 
 void SprinklerScheduleComponent::update_estimated_duration_sensor_() {
