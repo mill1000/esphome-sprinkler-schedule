@@ -293,7 +293,7 @@ async def to_code(config) -> None:
     await _switch_to_code(schedule_var, config)
 
     for valve in config[CONF_VALVES]:
-        if switch_config := config.get(CONF_ENABLE_SWITCH):
+        if switch_config := valve[CONF_ENABLE_SWITCH]:
             enable_sw = await switch.new_switch(switch_config)
         else:
             enable_sw = cg.nullptr
