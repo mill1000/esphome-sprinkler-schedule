@@ -224,7 +224,8 @@ async def _number_to_code(schedule, config) -> None:
         #         number_config[CONF_SET_ACTION],
         #     )
 
-        # await cg.register_parented(sw, config[CONF_SCHEDULE_ID]) # TODO?
+        await cg.register_component(num, number_config)
+
         cg.add(schedule.set_frequency_number(num))
 
     if number_config := config.get(CONF_REPETITIONS_NUMBER):
@@ -246,14 +247,15 @@ async def _number_to_code(schedule, config) -> None:
         #         number_config[CONF_SET_ACTION],
         #     )
 
-        # await cg.register_parented(sw, config[CONF_SCHEDULE_ID]) # TODO?
+        await cg.register_component(num, number_config)
+
         cg.add(schedule.set_repetitions_number(num))
 
 
 async def _switch_to_code(schedule, config) -> None:
     if switch_config := config.get(CONF_ENABLE_SWITCH):
         sw = await switch.new_switch(switch_config)
-        # await cg.register_parented(sw, config[CONF_SCHEDULE_ID]) # TODO?
+        await cg.register_component(sw, switch_config)
         cg.add(schedule.set_enable_switch(sw))
 
 
@@ -295,7 +297,8 @@ async def to_code(config) -> None:
             enable_sw = await switch.new_switch(switch_config)
         else:
             enable_sw = cg.nullptr
-        # await cg.register_component(enable_sw, valve[CONF_ENABLE_SWITCH]) # TODO?
+
+        await cg.register_component(enable_sw, valve[CONF_ENABLE_SWITCH])
 
         number_config = valve[CONF_RUN_DURATION_NUMBER]
         duration_num = await number.new_number(
@@ -309,6 +312,7 @@ async def to_code(config) -> None:
             number_config[CONF_INITIAL_VALUE]))
         cg.add(duration_num.set_restore_value(
             number_config[CONF_RESTORE_VALUE]))
-        # await cg.register_component(num_rd_var, valve[CONF_RUN_DURATION_NUMBER]) TODO?
+        
+        await cg.register_component(duration_num, number_config)
 
         cg.add(schedule_var.add_valve(enable_sw, duration_num))
