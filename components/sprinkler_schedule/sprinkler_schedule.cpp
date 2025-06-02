@@ -35,11 +35,13 @@ void SprinklerScheduleComponent::setup() {
   this->frequency_number_->add_on_state_callback([this](float value) { this->recalculate_next_run_(); });
 
   // Add callback to enable switch to recalculate next run when enabled
-  this->enable_switch_->add_on_state_callback([this](bool state) {
-    if (state) {
-      this->recalculate_next_run_();
-    }
-  });
+  if (this->enable_switch_) {
+    this->enable_switch_->add_on_state_callback([this](bool state) {
+      if (state) {
+        this->recalculate_next_run_();
+      }
+    });
+  }
 }
 
 void SprinklerScheduleComponent::loop() {
