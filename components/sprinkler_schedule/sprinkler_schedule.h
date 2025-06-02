@@ -16,7 +16,7 @@ namespace sprinkler_schedule {
 enum SprinklerScheduleConflictResolution {
   SKIP,
   QUEUE
-}
+};
 
 class SprinklerScheduleTime;
 class ScheduleOnTimeTrigger;
@@ -50,7 +50,7 @@ class SprinklerScheduleComponent : public Component {
 
     bool is_enabled() const { return (this->enable_switch == nullptr || this->enable_switch->state); }
     float get_duration_in_seconds() const {
-      if (duration_number->traits.get_unit_of_measurement() == "min")
+      if (((sprinkler::SprinklerControllerNumber*)duration_number)->traits.get_unit_of_measurement() == "min")
         return duration_number->state * 60;
       else
         return duration_number->state;
@@ -83,7 +83,7 @@ class SprinklerScheduleComponent : public Component {
   SprinklerScheduleTime* start_time_ = {nullptr};
   ScheduleOnTimeTrigger* start_time_trigger_;
 
-  SprinklerScheduleConflictResolution conflict_resolution_ = SprinklerScheduleConflictResolution.SKIP;
+  SprinklerScheduleConflictResolution conflict_resolution_ = SKIP;
 
   std::time_t last_run_timestamp_;
   std::time_t next_run_timestamp_;

@@ -139,13 +139,13 @@ void SprinklerScheduleComponent::on_start_time_() {
 
   // Run if controller is idle
   if (!this->is_controller_busy_())
-    this->run_(now);
+    this->run_(&now);
 
   // Otherwise controller is busy, handle according to conflict resolution
-  if (this->conflict_resolution_ == SprinklerScheduleConflictResolution.SKIP) {
+  if (this->conflict_resolution_ == SKIP) {
     // Re-calculate next run if skipping
     this->next_run_timestamp_ = this->calculate_next_run_(now.timestamp, this->frequency_number_->state);
-  } else if (this->conflict_resolution_ == SprinklerScheduleConflictResolution.QUEUE) {
+  } else if (this->conflict_resolution_ == QUEUE) {
     // Delay run by the time remaining in the current operation to the next 5 minute interval
     auto remaining = this->controller_->time_remaining_current_operation();
 
