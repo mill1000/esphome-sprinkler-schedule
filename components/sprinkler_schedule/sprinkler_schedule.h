@@ -49,7 +49,12 @@ class SprinklerScheduleComponent : public Component {
     const sprinkler::SprinklerControllerNumber* duration_number;
 
     bool is_enabled() const { return (this->enable_switch == nullptr || this->enable_switch->state); }
-    float get_duration_in_seconds() const { return duration_number->state * 60; }
+    float get_duration_in_seconds() const {
+      if (duration_number->traits.get_unit_of_measurement() == "min")
+        return duration_number->state * 60;
+      else
+        return duration_number->state;
+    }
   };
 
   SprinklerScheduleComponent(sprinkler::Sprinkler* controller,
