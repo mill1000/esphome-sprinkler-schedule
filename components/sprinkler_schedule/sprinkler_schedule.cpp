@@ -11,8 +11,8 @@ static const char *const TAG = "sprinkler_schedule";
 
 void SprinklerScheduleComponent::setup() {
   // Setup preferences
-  this->pref_ = global_preferences->make_preference<SprinklerScheduleRestoreState>(RESTORE_STATE_VERSION ^ this->last_run_sensor_->get_object_id_hash());
-
+  this->pref_ = global_preferences->make_preference<SprinklerScheduleRestoreState>(RESTORE_STATE_VERSION ^ 0xABCD1234);
+  // this->last_run_sensor_->get_object_id_hash()
   // Attempt to load previous state from flash
   SprinklerScheduleRestoreState restore_state = {};
   if (this->pref_.load(&restore_state)) {
