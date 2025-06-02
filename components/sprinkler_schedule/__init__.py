@@ -47,7 +47,7 @@ SprinklerScheduleComponent = sprinkler_schedule_ns.class_(
     "SprinklerScheduleComponent", cg.Component)
 
 SprinklerScheduleTime = sprinkler_schedule_ns.class_(
-    "SprinklerScheduleTime", datetime.TimeEntity, cg.Component)
+    "SprinklerScheduleTime", datetime.TimeEntity)
 
 SprinklerScheduleButton = sprinkler_schedule_ns.class_(
     "SprinklerScheduleButton", button.Button)
