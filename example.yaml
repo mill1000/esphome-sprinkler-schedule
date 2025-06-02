@@ -144,31 +144,54 @@ sprinkler_schedule:
   - id: schedule_a
     controller_id: sprinkler_controller
     start_time:
-      name: Schedule Start Time
+      name: Schedule A Start Time
       initial_value: "06:00:00"
 
-    # enable_switch:
-    #   id: enable_schedule
-    #   name: Enable Schedule
-    #   icon: mdi:calendar-remove
-    #   #optimistic: true
+    enable_switch:
+      name: Enable Schedule A
+      icon: mdi:calendar-remove
 
     frequency_number:
-      name: Schedule Frequency
+      name: Schedule A Frequency
       unit_of_measurement: d
       icon: mdi:calendar-clock
 
     repetitions_number:
-      name: Cycle Count
+      name: Schedule A Repetitions
       icon: mdi:water-sync
+
+    last_run_sensor:
+      name: Schedule A Last Run
+
+    next_run_sensor:
+      name: Schedule A Next Run
+
+    estimated_duration_sensor:
+      name: Schedule A Duration
+
+    manual_run_button:
+      name: Run Manual Cycle
+      icon: mdi:cog-play
+
+    run_now_button:
+      name: Run Schedule Now
+      icon: mdi:play
+
+    run_tomorrow_button:
+      name: Run Schedule Tomorrow
+      icon: mdi:calendar-start
+
+    delay_button:
+      name: Delay Schedule 1 Day
+      icon: mdi:calendar-plus
 
     valves:
       - enable_switch:
-          name: Zone 1 - Enable
+          name: Schedule A - Zone 1 - Enable
           icon: mdi:timer-check
 
         run_duration_number:
-          name: Zone 1 - Duration
+          name: Schedule A - Zone 1 - Duration
           step: 1
           min_value: 0
           max_value: 30
@@ -177,11 +200,11 @@ sprinkler_schedule:
           icon: mdi:timer
 
       - enable_switch:
-          name: Zone 2 - Enable
+          name: Schedule A - Zone 2 - Enable
           icon: mdi:timer-check
 
         run_duration_number:
-          name: Zone 2 - Duration
+          name: Schedule A - Zone 2 - Duration
           step: 1
           min_value: 0
           max_value: 30
@@ -190,11 +213,11 @@ sprinkler_schedule:
           icon: mdi:timer
 
       - enable_switch:
-          name: Zone 3 - Enable
+          name: Schedule A - Zone 3 - Enable
           icon: mdi:timer-check
 
         run_duration_number:
-          name: Zone 3 - Duration
+          name: Schedule A - Zone 3 - Duration
           step: 1
           min_value: 0
           max_value: 30
