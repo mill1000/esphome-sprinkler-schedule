@@ -1,5 +1,6 @@
 #pragma once
 
+#include "esphome/components/button/button.h"
 #include "esphome/components/datetime/time_entity.h"
 #include "esphome/components/number/number.h"
 #include "esphome/components/sensor/sensor.h"
@@ -30,6 +31,11 @@ class SprinklerScheduleComponent : public Component {
 
   SUB_NUMBER(repetitions);
   SUB_NUMBER(frequency);
+
+  SUB_BUTTON(run_now);
+  SUB_BUTTON(run_tomorrow);
+  SUB_BUTTON(delay);
+  SUB_BUTTON(manual_run);
 
  public:
   struct Valve {
@@ -76,7 +82,7 @@ class SprinklerScheduleComponent : public Component {
 
   void recalculate_next_run_();
   std::time_t calculate_next_run_(std::time_t from, uint32_t days) const;
-  void run_(const ESPTime& now);
+  void run_();
 };
 
 class SprinklerScheduleTime : public datetime::TimeEntity {
@@ -135,6 +141,12 @@ class ScheduleOnTimeTrigger : public datetime::OnTimeTrigger {
 
  protected:
   std::function<void()> on_time_;
+};
+
+class SprinklerScheduleButton : public button::Button {
+ public:
+ protected:
+  void press_action() {}  // Do nothing
 };
 
 }  // namespace sprinkler_schedule

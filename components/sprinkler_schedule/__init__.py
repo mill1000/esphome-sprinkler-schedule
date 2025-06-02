@@ -1,8 +1,8 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.codegen import Pvariable
-from esphome.components import (datetime, number, sensor, sprinkler, switch,
-                                time)
+from esphome.components import (button, datetime, number, sensor, sprinkler,
+                                switch, time)
 from esphome.components.sprinkler import (CONF_ENABLE_SWITCH,
                                           CONF_RUN_DURATION_NUMBER,
                                           CONF_VALVES,
@@ -31,6 +31,10 @@ CONF_NEXT_RUN = "next_run_sensor"
 CONF_ESTIMATED_DURATION = "estimated_duration_sensor"
 CONF_FREQUENCY_NUMBER = "frequency_number"
 CONF_REPETITIONS_NUMBER = "repetitions_number"
+CONF_RUN_NOW_BUTTON = "run_now_button"
+CONF_RUN_TOMORROW_BUTTON = "run_tomorrow_button"
+CONF_DELAY_BUTTON = "delay_button"
+CONF_MANUAL_RUN_BUTTON = "manual_run_button"
 
 
 sprinkler_schedule_ns = cg.esphome_ns.namespace("sprinkler_schedule")
@@ -40,6 +44,27 @@ SprinklerScheduleComponent = sprinkler_schedule_ns.class_(
 SprinklerScheduleTime = sprinkler_schedule_ns.class_(
     "SprinklerScheduleTime", datetime.TimeEntity, cg.Component)
 
+SprinklerScheduleButton = sprinkler_schedule_ns.class_(
+    "SprinklerScheduleButton", button.Button)
+
+_BUTTON_SCHEMA = (
+    cv.Schema(
+        {
+            cv.Optional(CONF_RUN_NOW_BUTTON): button.button_schema(
+                SprinklerScheduleButton,
+            ),
+            cv.Optional(CONF_RUN_TOMORROW_BUTTON): button.button_schema(
+                SprinklerScheduleButton,
+            ),
+            cv.Optional(CONF_DELAY_BUTTON): button.button_schema(
+                SprinklerScheduleButton,
+            ),
+            cv.Optional(CONF_MANUAL_RUN_BUTTON): button.button_schema(
+                SprinklerScheduleButton,
+            ),
+        }
+    )
+)
 
 _SENSOR_SCHEMA = (
     cv.Schema(
@@ -186,8 +211,31 @@ CONFIG_SCHEMA = (
     .extend(_SENSOR_SCHEMA)
     .extend(_NUMBER_SCHEMA)
     .extend(_SWITCH_SCHEMA)
+    .extend(_BUTTON_SCHEMA)
     .extend(cv.COMPONENT_SCHEMA)
 )
+
+
+async def _button_to_code(schedule, config) -> None:
+    if button_config := config.get(CONF_MANUAL_RUN_BUTTON):
+        but = await button.new_button(button_config)
+        # await cg.register_component(but, button_config) # TODO?
+        cg.add(schedule.set_manual_run_button(but))
+
+    if button_config := config.get(CONF_RUN_NOW_BUTTON):
+        but = await button.new_button(button_config)
+        # await cg.register_component(but, button_config) # TODO?
+        cg.add(schedule.set_run_now_button(but))
+
+    if button_config := config.get(CONF_RUN_TOMORROW_BUTTON):
+        but = await button.new_button(button_config)
+        # await cg.register_component(but, button_config) # TODO?
+        cg.add(schedule.set_run_tomorrow_button(but))
+
+    if button_config := config.get(CONF_DELAY_BUTTON):
+        but = await button.new_button(button_config)
+        # await cg.register_component(but, button_config) # TODO?
+        cg.add(schedule.set_delay_button(but))
 
 
 async def _sensor_to_code(schedule, config) -> None:
@@ -291,6 +339,7 @@ async def to_code(config) -> None:
     await _sensor_to_code(schedule_var, config)
     await _number_to_code(schedule_var, config)
     await _switch_to_code(schedule_var, config)
+    await _button_to_code(schedule_var, config)
 
     for valve in config[CONF_VALVES]:
         if switch_config := valve[CONF_ENABLE_SWITCH]:
@@ -312,7 +361,7 @@ async def to_code(config) -> None:
             number_config[CONF_INITIAL_VALUE]))
         cg.add(duration_num.set_restore_value(
             number_config[CONF_RESTORE_VALUE]))
-        
+
         await cg.register_component(duration_num, number_config)
 
         cg.add(schedule_var.add_valve(enable_sw, duration_num))

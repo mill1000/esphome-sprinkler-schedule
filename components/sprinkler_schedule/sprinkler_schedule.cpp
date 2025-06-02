@@ -42,6 +42,19 @@ void SprinklerScheduleComponent::setup() {
       }
     });
   }
+
+  // Add callbacks to buttons
+  if (this->manual_run_button_)
+    this->manual_run_button_->add_on_press_callback([this]() { this->run_(); });
+
+  if (this->run_now_button_)
+    this->run_now_button_->add_on_press_callback([this]() {});  // TODO
+
+  if (this->run_tomorrow_button_)
+    this->run_tomorrow_button_->add_on_press_callback([this]() {});  // TODO
+
+  if (this->delay_button_)
+    this->delay_button_->add_on_press_callback([this]() {});  // TODO
 }
 
 void SprinklerScheduleComponent::loop() {
@@ -88,8 +101,15 @@ void SprinklerScheduleComponent::on_start_time_() {
   if (!now.is_valid() || this->next_run_timestamp_ == 0)
     return;
 
-  if (now.timestamp >= this->next_run_timestamp_)
-    this->run_(now);
+  if (now.timestamp >= this->next_run_timestamp_) {
+    // Update last run timestamp
+    this->last_run_timestamp_ = now.timestamp;
+
+    this->run_();
+
+    // Calculate the next run time
+    this->next_run_timestamp_ = this->calculate_next_run_(now.timestamp, this->frequency_number_->state);
+  }
 }
 
 void SprinklerScheduleComponent::update_timestamp_sensor_(sensor::Sensor *sensor, std::time_t time, bool ignore_enabled) {
@@ -169,7 +189,7 @@ std::time_t SprinklerScheduleComponent::calculate_next_run_(std::time_t from, ui
   return std::mktime(date);
 }
 
-void SprinklerScheduleComponent::run_(const ESPTime &now) {
+void SprinklerScheduleComponent::run_() {
   // TODO controller must be in idle
 
   // Copy schedule settings to controller
@@ -189,14 +209,8 @@ void SprinklerScheduleComponent::run_(const ESPTime &now) {
   // Copy repetitions to controller
   controller_->set_repeat(this->get_cycle_repetitions_() - 1);
 
-  // Update last run timestamp
-  this->last_run_timestamp_ = now.timestamp;
-
   // Run the cycle
   controller_->start_full_cycle();
-
-  // Calculate the next run time
-  this->next_run_timestamp_ = this->calculate_next_run_(now.timestamp, this->frequency_number_->state);
 }
 
 }  // namespace sprinkler_schedule
