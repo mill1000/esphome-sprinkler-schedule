@@ -80,10 +80,16 @@ void SprinklerScheduleComponent::dump_config() {
   LOG_NUMBER("  ", "Frequency Number", this->frequency_number_);
   LOG_NUMBER("  ", "Repetitions Number", this->repetitions_number_);
 
+  LOG_BUTTON("  ", "Run Now Button", this->run_now_button_);
+  LOG_BUTTON("  ", "Run Tomorrow Button", this->run_tomorrow_button_);
+  LOG_BUTTON("  ", "Delay Button", this->delay_button_);
+  LOG_BUTTON("  ", "Manual Run Button", this->manual_run_button_);
+  LOG_BUTTON("  ", "Reset Button", this->reset_button_);
+
   for (uint8_t i = 0; i < this->valves_.size(); i++) {
     const auto &valve = this->valves_[i];
 
-    ESP_LOGCONFIG("TAG", "  Valve %d:", i);
+    ESP_LOGCONFIG(TAG, "  Valve %d:", i);
     LOG_SWITCH("    ", "Enable Switch", (switch_::Switch *)valve.enable_switch);
     LOG_NUMBER("    ", "Run Duration Number", (number::Number *)valve.duration_number);
   }
