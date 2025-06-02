@@ -66,18 +66,23 @@ _BUTTON_SCHEMA = (
         {
             cv.Optional(CONF_RUN_NOW_BUTTON): button.button_schema(
                 SprinklerScheduleButton,
+                icon="mdi:play",
             ),
             cv.Optional(CONF_RUN_TOMORROW_BUTTON): button.button_schema(
                 SprinklerScheduleButton,
+                icon="mdi:calendar-start",
             ),
             cv.Optional(CONF_DELAY_BUTTON): button.button_schema(
                 SprinklerScheduleButton,
+                icon="mdi:calendar-plus",
             ),
             cv.Optional(CONF_MANUAL_RUN_BUTTON): button.button_schema(
                 SprinklerScheduleButton,
+                icon="mdi:cog-play",
             ),
             cv.Optional(CONF_RESET_BUTTON): button.button_schema(
                 SprinklerScheduleButton,
+                icon="mdi:calendar-sync",
             ),
         }
     )
@@ -90,6 +95,7 @@ _NUMBER_SCHEMA = (
                 number.number_schema(
                     SprinklerControllerNumber,
                     unit_of_measurement="d",
+                    icon="mdi:calendar-clock",
                     entity_category=ENTITY_CATEGORY_CONFIG
                 )
                 .extend(
@@ -110,6 +116,7 @@ _NUMBER_SCHEMA = (
             cv.Optional(CONF_REPETITIONS_NUMBER): cv.maybe_simple_value(
                 number.number_schema(
                     SprinklerControllerNumber,
+                    icon="mdi:water-sync",
                     entity_category=ENTITY_CATEGORY_CONFIG
                 )
                 .extend(
@@ -157,6 +164,7 @@ _SWITCH_SCHEMA = (
             cv.Optional(CONF_ENABLE_SWITCH): cv.maybe_simple_value(
                 switch.switch_schema(
                     SprinklerControllerSwitch,
+                    icon="mdi:calendar-remove",
                     entity_category=ENTITY_CATEGORY_CONFIG,
                     default_restore_mode="RESTORE_DEFAULT_OFF",
                 ),
@@ -171,6 +179,7 @@ _VALVE_SCHEMA = cv.Schema(
         cv.Optional(CONF_ENABLE_SWITCH): cv.maybe_simple_value(
             switch.switch_schema(
                 SprinklerControllerSwitch,
+                icon="mdi:timer-check",
                 entity_category=ENTITY_CATEGORY_CONFIG,
                 default_restore_mode="RESTORE_DEFAULT_OFF",
             ),
@@ -179,7 +188,9 @@ _VALVE_SCHEMA = cv.Schema(
         # TODO should support run_duration too?
         cv.Required(CONF_RUN_DURATION_NUMBER): cv.maybe_simple_value(
             number.number_schema(
-                SprinklerControllerNumber, entity_category=ENTITY_CATEGORY_CONFIG
+                SprinklerControllerNumber,
+                icon="mdi:timer",
+                entity_category=ENTITY_CATEGORY_CONFIG,
             )
             .extend(
                 {
