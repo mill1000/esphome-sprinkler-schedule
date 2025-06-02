@@ -116,6 +116,9 @@ void SprinklerScheduleComponent::update_estimated_duration_sensor_() {
   // Apply repetitions
   estimated_duration *= this->get_cycle_repetitions_();
 
+  // Convert to seconds
+  estimated_duration *= 60;
+
   // Update sensor as needed
   if (estimated_duration != this->estimated_duration_sensor_->raw_state)
     this->estimated_duration_sensor_->publish_state(estimated_duration);
