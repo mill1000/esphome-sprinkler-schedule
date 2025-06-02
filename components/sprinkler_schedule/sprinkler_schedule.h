@@ -13,6 +13,11 @@
 namespace esphome {
 namespace sprinkler_schedule {
 
+enum SprinklerScheduleConflictResolution {
+  SKIP,
+  QUEUE
+}
+
 class SprinklerScheduleTime;
 class ScheduleOnTimeTrigger;
 
@@ -58,6 +63,8 @@ class SprinklerScheduleComponent : public Component {
   void loop() override;
   void dump_config() override;
 
+  void set_conflict_resolution(SprinklerScheduleConflictResolution resolution) { this->conflict_resolution_ = resolution; }
+
   void add_valve(const sprinkler::SprinklerControllerSwitch* enable_sw,
                  const sprinkler::SprinklerControllerNumber* duration_num) {
     this->valves_.push_back({enable_sw, duration_num});
@@ -70,6 +77,8 @@ class SprinklerScheduleComponent : public Component {
   time::RealTimeClock* clock_ = {nullptr};  // TODO can't make const?
   SprinklerScheduleTime* start_time_ = {nullptr};
   ScheduleOnTimeTrigger* start_time_trigger_;
+
+  SprinklerScheduleConflictResolution conflict_resolution_ = SprinklerScheduleConflictResolution.SKIP;
 
   std::time_t last_run_timestamp_;
   std::time_t next_run_timestamp_;
@@ -86,7 +95,9 @@ class SprinklerScheduleComponent : public Component {
 
   void recalculate_next_run_();
   std::time_t calculate_next_run_(std::time_t from, uint32_t days) const;
-  void run_(const ESPTime *now, bool update_timestamps = true);
+  void run_(const ESPTime* now, bool update_timestamps = true);
+
+  bool is_controller_busy_() const { return (this->controller_->active_valve().has_value() || this->controller_->paused_valve().has_value()); }
 };
 
 class SprinklerScheduleTime : public datetime::TimeEntity {

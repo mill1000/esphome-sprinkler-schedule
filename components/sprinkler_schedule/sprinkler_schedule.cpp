@@ -133,8 +133,30 @@ void SprinklerScheduleComponent::on_start_time_() {
   if (!now.is_valid() || this->next_run_timestamp_ == 0)
     return;
 
-  if (now.timestamp >= this->next_run_timestamp_)
+  // Return early if it's not time to run
+  if (now.timestamp < this->next_run_timestamp_)
+    return;
+
+  // Run if controller is idle
+  if (!this->is_controller_busy_())
     this->run_(now);
+
+  // Otherwise controller is busy, handle according to conflict resolution
+  if (this->conflict_resolution_ == SprinklerScheduleConflictResolution.SKIP) {
+    // Re-calculate next run if skipping
+    this->next_run_timestamp_ = this->calculate_next_run_(now.timestamp, this->frequency_number_->state);
+  } else if (this->conflict_resolution_ == SprinklerScheduleConflictResolution.QUEUE) {
+    // Delay run by the time remaining in the current operation to the next 5 minute interval
+    auto remaining = this->controller_->time_remaining_current_operation();
+
+    // If paused, current operation doesn't have a value so default to 5 minutes
+    float delay_time = remaining.has_value() ? remaining.value() + 60 : 300;
+
+    // Round to next 5 minute interval
+    delay_time = 300 * std::ceil(delay_time / 300);
+
+    this->next_run_timestamp_ += delay_time;
+  }
 }
 
 void SprinklerScheduleComponent::update_timestamp_sensor_(sensor::Sensor *sensor, std::time_t time, bool ignore_enabled) {
@@ -212,7 +234,9 @@ std::time_t SprinklerScheduleComponent::calculate_next_run_(std::time_t from, ui
 }
 
 void SprinklerScheduleComponent::run_(const ESPTime *now, bool update_timestamps) {
-  // TODO controller must be in idle
+  // Don't start if controller is busy or in standby
+  if (this->is_controller_busy_() || this->controller_->standby())
+    return;
 
   // Copy schedule settings to controller
   for (uint8_t i = 0; i < this->valves_.size(); i++) {
@@ -220,23 +244,23 @@ void SprinklerScheduleComponent::run_(const ESPTime *now, bool update_timestamps
 
     // Copy valve enable switch state to the controller
     if (valve.is_enabled())
-      controller_->enable_switch(i)->turn_on();
+      this->controller_->enable_switch(i)->turn_on();
     else
-      controller_->enable_switch(i)->turn_off();
+      this->controller_->enable_switch(i)->turn_off();
 
     // Copy valve run duration to controller
-    controller_->set_valve_run_duration(i, valve.get_duration_in_seconds());
+    this->controller_->set_valve_run_duration(i, valve.get_duration_in_seconds());
   }
 
   // Copy repetitions to controller
-  controller_->set_repeat(this->get_cycle_repetitions_() - 1);
+  this->controller_->set_repeat(this->get_cycle_repetitions_() - 1);
 
   // Update last run timestamp
   if (update_timestamps)
     this->last_run_timestamp_ = now->timestamp;
 
   // Run the cycle
-  controller_->start_full_cycle();
+  this->controller_->start_full_cycle();
 
   // Calculate the next run time
   if (update_timestamps)

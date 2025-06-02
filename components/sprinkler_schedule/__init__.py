@@ -26,6 +26,7 @@ MULTI_CONF = True
 CONF_CONTROLLER_ID = "controller_id"
 CONF_TIME_ID = "time_id"
 CONF_START_TIME = "start_time"
+CONF_CONFLICT_RESOLUTION = "conflict_resolution"
 
 CONF_LAST_RUN = "last_run_sensor"
 CONF_NEXT_RUN = "next_run_sensor"
@@ -50,6 +51,15 @@ SprinklerScheduleTime = sprinkler_schedule_ns.class_(
 
 SprinklerScheduleButton = sprinkler_schedule_ns.class_(
     "SprinklerScheduleButton", button.Button)
+
+SprinklerScheduleConflictResolution = sprinkler_schedule_ns.enum(
+    "SprinklerScheduleConflictResolution"
+)
+
+_CONFLICT_RESOLUTION = {
+    "skip": SprinklerScheduleConflictResolution.SKIP,
+    "queue": SprinklerScheduleConflictResolution.QUEUE,
+}
 
 _BUTTON_SCHEMA = (
     cv.Schema(
@@ -208,6 +218,7 @@ CONFIG_SCHEMA = (
                 ),
                 key=CONF_NAME,
             ),
+            cv.Optional(CONF_CONFLICT_RESOLUTION, default="skip"):  cv.enum(_CONFLICT_RESOLUTION, lower=True),
             cv.Required(CONF_VALVES): cv.ensure_list(_VALVE_SCHEMA),
         }
     )
@@ -350,6 +361,8 @@ async def to_code(config) -> None:
         clock,
         start_time,
     )
+
+    cg.add(schedule.set_conflict_resolution(config[CONF_CONFLICT_RESOLUTION]))
 
     await cg.register_component(schedule, config)
 
