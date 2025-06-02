@@ -86,7 +86,7 @@ class SprinklerScheduleComponent : public Component {
 
   void recalculate_next_run_();
   std::time_t calculate_next_run_(std::time_t from, uint32_t days) const;
-  void run_();
+  void run_(const ESPTime *now, bool update_timestamps = true);
 };
 
 class SprinklerScheduleTime : public datetime::TimeEntity {
