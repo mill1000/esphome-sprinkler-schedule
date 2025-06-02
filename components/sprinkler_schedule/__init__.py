@@ -19,7 +19,7 @@ from esphome.const import (CONF_HOUR, CONF_ID, CONF_INITIAL_VALUE,
 
 CODEOWNERS = ["@mill1000"]
 DEPENDENCIES = ["sprinkler", "time"]
-AUTO_LOAD = ["number", "switch", "datetime", "sensor"]
+AUTO_LOAD = ["number", "switch", "datetime", "sensor", "button"]
 
 MULTI_CONF = True
 
