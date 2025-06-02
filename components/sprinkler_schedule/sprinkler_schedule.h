@@ -41,6 +41,9 @@ class SprinklerScheduleComponent : public Component {
   struct Valve {
     const sprinkler::SprinklerControllerSwitch* enable_switch;
     const sprinkler::SprinklerControllerNumber* duration_number;
+
+    bool is_enabled() const { return (this->enable_switch == nullptr || this->enable_switch->state); }
+    float get_duration_in_seconds() const { return duration_number->state * 60; }
   };
 
   SprinklerScheduleComponent(sprinkler::Sprinkler* controller,

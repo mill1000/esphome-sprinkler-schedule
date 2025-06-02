@@ -84,8 +84,8 @@ void SprinklerScheduleComponent::dump_config() {
     const auto &valve = this->valves_[i];
 
     ESP_LOGCONFIG("TAG", "  Valve %d:", i);
-    LOG_SWITCH("    ", "Enable Switch", (switch_::Switch*)valve.enable_switch);
-    LOG_NUMBER("    ", "Run Duration Number", (number::Number*)valve.duration_number);
+    LOG_SWITCH("    ", "Enable Switch", (switch_::Switch *)valve.enable_switch);
+    LOG_NUMBER("    ", "Run Duration Number", (number::Number *)valve.duration_number);
   }
 }
 
@@ -137,15 +137,12 @@ void SprinklerScheduleComponent::update_estimated_duration_sensor_() {
   // Sum run duration of all enabled valves
   auto estimated_duration = 0;
   for (const auto &valve : this->valves_) {
-    if (valve.enable_switch == nullptr || valve.enable_switch->state)
-      estimated_duration += valve.duration_number->state;
+    if (valve.is_enabled())
+      estimated_duration += valve.get_duration_in_seconds();
   }
 
   // Apply repetitions
   estimated_duration *= this->get_cycle_repetitions_();
-
-  // Convert to seconds
-  estimated_duration *= 60;
 
   // Update sensor as needed
   if (estimated_duration != this->estimated_duration_sensor_->raw_state)
@@ -197,13 +194,13 @@ void SprinklerScheduleComponent::run_() {
     const auto &valve = this->valves_[i];
 
     // Copy valve enable switch state to the controller
-    if (valve.enable_switch == nullptr || valve.enable_switch->state)
+    if (valve.is_enabled())
       controller_->enable_switch(i)->turn_on();
     else
       controller_->enable_switch(i)->turn_off();
 
     // Copy valve run duration to controller
-    controller_->set_valve_run_duration(i, valve.duration_number->state);
+    controller_->set_valve_run_duration(i, valve.get_duration_in_seconds());
   }
 
   // Copy repetitions to controller
