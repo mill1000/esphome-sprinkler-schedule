@@ -26,11 +26,14 @@ MULTI_CONF = True
 CONF_CONTROLLER_ID = "controller_id"
 CONF_TIME_ID = "time_id"
 CONF_START_TIME = "start_time"
+
 CONF_LAST_RUN = "last_run_sensor"
 CONF_NEXT_RUN = "next_run_sensor"
 CONF_ESTIMATED_DURATION = "estimated_duration_sensor"
+
 CONF_FREQUENCY_NUMBER = "frequency_number"
 CONF_REPETITIONS_NUMBER = "repetitions_number"
+
 CONF_RUN_NOW_BUTTON = "run_now_button"
 CONF_RUN_TOMORROW_BUTTON = "run_tomorrow_button"
 CONF_DELAY_BUTTON = "delay_button"
@@ -65,27 +68,6 @@ _BUTTON_SCHEMA = (
         }
     )
 )
-
-_SENSOR_SCHEMA = (
-    cv.Schema(
-        {
-            cv.Optional(CONF_LAST_RUN): sensor.sensor_schema(
-                accuracy_decimals=0,
-                device_class=DEVICE_CLASS_TIMESTAMP,
-            ),
-            cv.Optional(CONF_NEXT_RUN): sensor.sensor_schema(
-                accuracy_decimals=0,
-                device_class=DEVICE_CLASS_TIMESTAMP,
-            ),
-            cv.Optional(CONF_ESTIMATED_DURATION): sensor.sensor_schema(
-                unit_of_measurement=UNIT_SECOND,
-                accuracy_decimals=0,
-                device_class=DEVICE_CLASS_DURATION,
-            ),
-        }
-    )
-)
-
 
 _NUMBER_SCHEMA = (
     cv.Schema(
@@ -135,11 +117,29 @@ _NUMBER_SCHEMA = (
     )
 )
 
+_SENSOR_SCHEMA = (
+    cv.Schema(
+        {
+            cv.Optional(CONF_LAST_RUN): sensor.sensor_schema(
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_TIMESTAMP,
+            ),
+            cv.Optional(CONF_NEXT_RUN): sensor.sensor_schema(
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_TIMESTAMP,
+            ),
+            cv.Optional(CONF_ESTIMATED_DURATION): sensor.sensor_schema(
+                unit_of_measurement=UNIT_SECOND,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_DURATION,
+            ),
+        }
+    )
+)
 
 _SWITCH_SCHEMA = (
     cv.Schema(
         {
-            # TODO needs new name, conflicts with enable_switch in valves?
             cv.Optional(CONF_ENABLE_SWITCH): cv.maybe_simple_value(
                 switch.switch_schema(
                     SprinklerControllerSwitch,
@@ -151,7 +151,6 @@ _SWITCH_SCHEMA = (
         }
     )
 )
-
 
 _VALVE_SCHEMA = cv.Schema(
     {
@@ -208,20 +207,16 @@ CONFIG_SCHEMA = (
             cv.Required(CONF_VALVES): cv.ensure_list(_VALVE_SCHEMA),
         }
     )
-    .extend(_SENSOR_SCHEMA)
-    .extend(_NUMBER_SCHEMA)
-    .extend(_SWITCH_SCHEMA)
     .extend(_BUTTON_SCHEMA)
+    .extend(_NUMBER_SCHEMA)
+    .extend(_SENSOR_SCHEMA)
+    .extend(_SWITCH_SCHEMA)
     .extend(cv.COMPONENT_SCHEMA)
 )
 
 
 async def _button_to_code(schedule, config) -> None:
-    if button_config := config.get(CONF_MANUAL_RUN_BUTTON):
-        but = await button.new_button(button_config)
-        # await cg.register_component(but, button_config) # TODO?
-        cg.add(schedule.set_manual_run_button(but))
-
+    """Add all sub-buttons to the schedule object."""
     if button_config := config.get(CONF_RUN_NOW_BUTTON):
         but = await button.new_button(button_config)
         # await cg.register_component(but, button_config) # TODO?
@@ -237,22 +232,14 @@ async def _button_to_code(schedule, config) -> None:
         # await cg.register_component(but, button_config) # TODO?
         cg.add(schedule.set_delay_button(but))
 
-
-async def _sensor_to_code(schedule, config) -> None:
-    if sensor_config := config.get(CONF_LAST_RUN):
-        sens = await sensor.new_sensor(sensor_config)
-        cg.add(schedule.set_last_run_sensor(sens))
-
-    if sensor_config := config.get(CONF_NEXT_RUN):
-        sens = await sensor.new_sensor(sensor_config)
-        cg.add(schedule.set_next_run_sensor(sens))
-
-    if sensor_config := config.get(CONF_ESTIMATED_DURATION):
-        sens = await sensor.new_sensor(sensor_config)
-        cg.add(schedule.set_estimated_duration_sensor(sens))
+    if button_config := config.get(CONF_MANUAL_RUN_BUTTON):
+        but = await button.new_button(button_config)
+        # await cg.register_component(but, button_config) # TODO?
+        cg.add(schedule.set_manual_run_button(but))
 
 
 async def _number_to_code(schedule, config) -> None:
+    """Add all sub-numbers to the schedule object."""
     if number_config := config.get(CONF_FREQUENCY_NUMBER):
         num = await number.new_number(
             number_config,
@@ -300,14 +287,8 @@ async def _number_to_code(schedule, config) -> None:
         cg.add(schedule.set_repetitions_number(num))
 
 
-async def _switch_to_code(schedule, config) -> None:
-    if switch_config := config.get(CONF_ENABLE_SWITCH):
-        sw = await switch.new_switch(switch_config)
-        await cg.register_component(sw, switch_config)
-        cg.add(schedule.set_enable_switch(sw))
-
-
 async def _start_time_to_code(config) -> Pvariable:
+    """Create a datetime object for the schedule start time."""
     var = await datetime.new_datetime(config)
 
     if initial_value := config.get(CONF_INITIAL_VALUE):
@@ -322,32 +303,61 @@ async def _start_time_to_code(config) -> Pvariable:
     return var
 
 
+async def _sensor_to_code(schedule, config) -> None:
+    """Add all sub-sensors to the schedule object."""
+    if sensor_config := config.get(CONF_LAST_RUN):
+        sens = await sensor.new_sensor(sensor_config)
+        cg.add(schedule.set_last_run_sensor(sens))
+
+    if sensor_config := config.get(CONF_NEXT_RUN):
+        sens = await sensor.new_sensor(sensor_config)
+        cg.add(schedule.set_next_run_sensor(sens))
+
+    if sensor_config := config.get(CONF_ESTIMATED_DURATION):
+        sens = await sensor.new_sensor(sensor_config)
+        cg.add(schedule.set_estimated_duration_sensor(sens))
+
+
+async def _switch_to_code(schedule, config) -> None:
+    """Add all sub-switches to the schedule object."""
+    if switch_config := config.get(CONF_ENABLE_SWITCH):
+        sw = await switch.new_switch(switch_config)
+        await cg.register_component(sw, switch_config)
+        cg.add(schedule.set_enable_switch(sw))
+
+
 async def to_code(config) -> None:
-    controller_var = await cg.get_variable(config[CONF_CONTROLLER_ID])
-    clock_var = await cg.get_variable(config[CONF_TIME_ID])
+    # Get pointers to sprinkler controller and real time clock
+    controller = await cg.get_variable(config[CONF_CONTROLLER_ID])
+    clock = await cg.get_variable(config[CONF_TIME_ID])
 
-    start_time_var = await _start_time_to_code(config[CONF_START_TIME])
+    # Create datetime object for schedule start time
+    start_time = await _start_time_to_code(config[CONF_START_TIME])
 
-    schedule_var = cg.new_Pvariable(config[CONF_ID],
-                                    controller_var,
-                                    clock_var,
-                                    start_time_var,
-                                    )
+    # Construct schedule object
+    schedule = cg.new_Pvariable(
+        config[CONF_ID],
+        controller,
+        clock,
+        start_time,
+    )
 
-    await cg.register_component(schedule_var, config)
+    await cg.register_component(schedule, config)
 
-    await _sensor_to_code(schedule_var, config)
-    await _number_to_code(schedule_var, config)
-    await _switch_to_code(schedule_var, config)
-    await _button_to_code(schedule_var, config)
+    # Setup all sub buttons, numbers, sensors and switches
+    await _button_to_code(schedule, config)
+    await _number_to_code(schedule, config)
+    await _sensor_to_code(schedule, config)
+    await _switch_to_code(schedule, config)
 
+    # Add each valve to the schedule
     for valve in config[CONF_VALVES]:
         if switch_config := valve[CONF_ENABLE_SWITCH]:
             enable_sw = await switch.new_switch(switch_config)
         else:
             enable_sw = cg.nullptr
 
-        await cg.register_component(enable_sw, valve[CONF_ENABLE_SWITCH])
+        await cg.register_component(enable_sw, switch_config)
 
         number_config = valve[CONF_RUN_DURATION_NUMBER]
         duration_num = await number.new_number(
@@ -357,11 +367,12 @@ async def to_code(config) -> None:
             step=number_config[CONF_STEP],
         )
 
-        cg.add(duration_num.set_initial_value(
-            number_config[CONF_INITIAL_VALUE]))
-        cg.add(duration_num.set_restore_value(
-            number_config[CONF_RESTORE_VALUE]))
+        cg.add(
+            duration_num.set_initial_value(number_config[CONF_INITIAL_VALUE]))
+        cg.add(
+            duration_num.set_restore_value(number_config[CONF_RESTORE_VALUE]))
 
         await cg.register_component(duration_num, number_config)
 
-        cg.add(schedule_var.add_valve(enable_sw, duration_num))
+        # Add valve to schedule
+        cg.add(schedule.add_valve(enable_sw, duration_num))
