@@ -66,6 +66,14 @@ void SprinklerScheduleComponent::dump_config() {
 
   LOG_NUMBER("  ", "Frequency Number", this->frequency_number_);
   LOG_NUMBER("  ", "Repetitions Number", this->repetitions_number_);
+
+  for (uint8_t i = 0; i < this->valves_.size(); i++) {
+    const auto &valve = this->valves_[i];
+
+    ESP_LOGCONFIG("TAG", "  Valve %d:", i);
+    LOG_SWITCH("    ", "Enable Switch", (switch_::Switch*)valve.enable_switch);
+    LOG_NUMBER("    ", "Run Duration Number", (number::Number*)valve.duration_number);
+  }
 }
 
 void SprinklerScheduleComponent::on_start_time_() {
