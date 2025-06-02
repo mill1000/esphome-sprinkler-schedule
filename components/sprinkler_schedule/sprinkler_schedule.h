@@ -36,6 +36,7 @@ class SprinklerScheduleComponent : public Component {
   SUB_BUTTON(run_tomorrow);
   SUB_BUTTON(delay);
   SUB_BUTTON(manual_run);
+  SUB_BUTTON(reset);
 
  public:
   struct Valve {

@@ -38,6 +38,7 @@ CONF_RUN_NOW_BUTTON = "run_now_button"
 CONF_RUN_TOMORROW_BUTTON = "run_tomorrow_button"
 CONF_DELAY_BUTTON = "delay_button"
 CONF_MANUAL_RUN_BUTTON = "manual_run_button"
+CONF_RESET_BUTTON = "reset_button"
 
 
 sprinkler_schedule_ns = cg.esphome_ns.namespace("sprinkler_schedule")
@@ -63,6 +64,9 @@ _BUTTON_SCHEMA = (
                 SprinklerScheduleButton,
             ),
             cv.Optional(CONF_MANUAL_RUN_BUTTON): button.button_schema(
+                SprinklerScheduleButton,
+            ),
+            cv.Optional(CONF_RESET_BUTTON): button.button_schema(
                 SprinklerScheduleButton,
             ),
         }
@@ -236,6 +240,11 @@ async def _button_to_code(schedule, config) -> None:
         but = await button.new_button(button_config)
         # await cg.register_component(but, button_config) # TODO?
         cg.add(schedule.set_manual_run_button(but))
+
+    if button_config := config.get(CONF_RESET_BUTTON):
+        but = await button.new_button(button_config)
+        # await cg.register_component(but, button_config) # TODO?
+        cg.add(schedule.set_reset_button(but))
 
 
 async def _number_to_code(schedule, config) -> None:
