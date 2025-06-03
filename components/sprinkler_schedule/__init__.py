@@ -385,12 +385,11 @@ async def to_code(config) -> None:
 
     # Add each valve to the schedule
     for valve in config[CONF_VALVES]:
-        if switch_config := valve[CONF_ENABLE_SWITCH]:
+        if switch_config := valve.get(CONF_ENABLE_SWITCH):
             enable_sw = await switch.new_switch(switch_config)
+            await cg.register_component(enable_sw, switch_config)
         else:
             enable_sw = cg.nullptr
-
-        await cg.register_component(enable_sw, switch_config)
 
         number_config = valve[CONF_RUN_DURATION_NUMBER]
         duration_num = await number.new_number(
