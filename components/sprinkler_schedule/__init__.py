@@ -64,25 +64,40 @@ _CONFLICT_RESOLUTION = {
 _BUTTON_SCHEMA = (
     cv.Schema(
         {
-            cv.Optional(CONF_RUN_NOW_BUTTON): button.button_schema(
-                SprinklerScheduleButton,
-                icon="mdi:play",
+            cv.Optional(CONF_RUN_NOW_BUTTON):  cv.maybe_simple_value(
+                button.button_schema(
+                    SprinklerScheduleButton,
+                    icon="mdi:play",
+                ),
+                key=CONF_NAME,
             ),
-            cv.Optional(CONF_RUN_TOMORROW_BUTTON): button.button_schema(
-                SprinklerScheduleButton,
-                icon="mdi:calendar-start",
+            cv.Optional(CONF_RUN_TOMORROW_BUTTON):  cv.maybe_simple_value(
+                button.button_schema(
+                    SprinklerScheduleButton,
+                    icon="mdi:calendar-start",
+                ),
+                key=CONF_NAME,
             ),
-            cv.Optional(CONF_DELAY_BUTTON): button.button_schema(
-                SprinklerScheduleButton,
-                icon="mdi:calendar-plus",
+            cv.Optional(CONF_DELAY_BUTTON):  cv.maybe_simple_value(
+                button.button_schema(
+                    SprinklerScheduleButton,
+                    icon="mdi:calendar-plus",
+                ),
+                key=CONF_NAME,
             ),
-            cv.Optional(CONF_MANUAL_RUN_BUTTON): button.button_schema(
-                SprinklerScheduleButton,
-                icon="mdi:cog-play",
+            cv.Optional(CONF_MANUAL_RUN_BUTTON):  cv.maybe_simple_value(
+                button.button_schema(
+                    SprinklerScheduleButton,
+                    icon="mdi:cog-play",
+                ),
+                key=CONF_NAME,
             ),
-            cv.Optional(CONF_RESET_BUTTON): button.button_schema(
-                SprinklerScheduleButton,
-                icon="mdi:calendar-sync",
+            cv.Optional(CONF_RESET_BUTTON): cv.maybe_simple_value(
+                button.button_schema(
+                    SprinklerScheduleButton,
+                    icon="mdi:calendar-sync",
+                ),
+                key=CONF_NAME,
             ),
         }
     )
@@ -141,19 +156,29 @@ _NUMBER_SCHEMA = (
 _SENSOR_SCHEMA = (
     cv.Schema(
         {
-            cv.Optional(CONF_LAST_RUN): sensor.sensor_schema(
-                accuracy_decimals=0,
-                device_class=DEVICE_CLASS_TIMESTAMP,
+            cv.Optional(CONF_LAST_RUN):  cv.maybe_simple_value(
+                sensor.sensor_schema(
+                    accuracy_decimals=0,
+                    device_class=DEVICE_CLASS_TIMESTAMP,
+                ),
+                key=CONF_NAME,
             ),
-            cv.Optional(CONF_NEXT_RUN): sensor.sensor_schema(
-                accuracy_decimals=0,
-                device_class=DEVICE_CLASS_TIMESTAMP,
+            cv.Optional(CONF_NEXT_RUN):  cv.maybe_simple_value(
+                sensor.sensor_schema(
+                    accuracy_decimals=0,
+                    device_class=DEVICE_CLASS_TIMESTAMP,
+                ),
+                key=CONF_NAME,
             ),
-            cv.Optional(CONF_ESTIMATED_DURATION): sensor.sensor_schema(
-                unit_of_measurement=UNIT_SECOND,
-                accuracy_decimals=0,
-                device_class=DEVICE_CLASS_DURATION,
-            ),
+            cv.Optional(CONF_ESTIMATED_DURATION):
+            cv.maybe_simple_value(
+                sensor.sensor_schema(
+                    unit_of_measurement=UNIT_SECOND,
+                    accuracy_decimals=0,
+                    device_class=DEVICE_CLASS_DURATION,
+                ),
+                key=CONF_NAME,
+            )
         }
     )
 )
