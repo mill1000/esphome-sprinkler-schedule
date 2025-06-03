@@ -134,8 +134,7 @@ void SprinklerScheduleComponent::on_start_time_() {
   const ESPTime &now = this->clock_->now();
 
   // Ignore if clock is invalid or no run is scheduled
-  if (!now.is_valid() || this->next_run_timestamp_ == 0)
-  {
+  if (!now.is_valid() || this->next_run_timestamp_ == 0) {
     ESP_LOGW(TAG, "Clock not valid or no run scheduled.");
     return;
   }
@@ -216,8 +215,7 @@ void SprinklerScheduleComponent::recalculate_next_run_() {
   const ESPTime &now = this->clock_->now();
 
   // Don't run if we're lacking a valid clock
-  if (!now.is_valid())
-  {
+  if (!now.is_valid()) {
     ESP_LOGW(TAG, "Clock is not valid. Failed to recalculate next run time.");
     return;  // TODO set an error?
   }
@@ -229,8 +227,7 @@ void SprinklerScheduleComponent::recalculate_next_run_() {
   auto next = this->calculate_next_run_(from_time, this->frequency_number_->state);
 
   // If next run is in the past, schedule for tomorrow
-  if (next < now.timestamp)
-  {
+  if (next < now.timestamp) {
     ESP_LOGI(TAG, "Calculated next run is in the past. Scheduling for tomorrow.");
     next = this->calculate_next_run_(now.timestamp, 1);
   }
@@ -252,8 +249,7 @@ std::time_t SprinklerScheduleComponent::calculate_next_run_(std::time_t from, ui
 
 void SprinklerScheduleComponent::run_(const ESPTime *now, bool update_timestamps) {
   // Don't start if controller is busy or in standby
-  if (this->is_controller_busy_() || this->controller_->standby())
-  {
+  if (this->is_controller_busy_() || this->controller_->standby()) {
     ESP_LOGW(TAG, "Controller is busy or in standby. Run cancelled.");
     return;
   }
