@@ -49,6 +49,8 @@ void SprinklerScheduleComponent::setup() {
       const auto &now = this->clock_->now();
       if (now.is_valid())
         this->run_(&now);
+      else
+        ESP_LOGW(TAG, "Clock is not valid. Run cancelled.");
     });
   }
 
@@ -58,6 +60,8 @@ void SprinklerScheduleComponent::setup() {
       const auto &now = this->clock_->now();
       if (now.is_valid())
         this->next_run_timestamp_ = this->calculate_next_run_(now.timestamp, 1);
+      else
+        ESP_LOGW(TAG, "Clock is not valid. Run not scheduled for tomorrow.");
     });
   }
 
@@ -131,7 +135,10 @@ void SprinklerScheduleComponent::on_start_time_() {
 
   // Ignore if clock is invalid or no run is scheduled
   if (!now.is_valid() || this->next_run_timestamp_ == 0)
+  {
+    ESP_LOGW(TAG, "Clock not valid or no run scheduled.");
     return;
+  }
 
   // Return early if it's not time to run
   if (now.timestamp < this->next_run_timestamp_)
@@ -143,6 +150,8 @@ void SprinklerScheduleComponent::on_start_time_() {
 
   // Otherwise controller is busy, handle according to conflict resolution
   if (this->conflict_resolution_ == SKIP) {
+    ESP_LOGI(TAG, "Controller is busy. Run skipped.");
+
     // Re-calculate next run if skipping
     this->next_run_timestamp_ = this->calculate_next_run_(now.timestamp, this->frequency_number_->state);
   } else if (this->conflict_resolution_ == QUEUE) {
@@ -150,10 +159,12 @@ void SprinklerScheduleComponent::on_start_time_() {
     auto remaining = this->controller_->time_remaining_current_operation();
 
     // If paused, current operation doesn't have a value so default to 5 minutes
-    float delay_time = remaining.has_value() ? remaining.value() + 60 : 300;
+    auto delay_time = remaining.has_value() ? remaining.value() + 60 : 300;
 
     // Round to next 5 minute interval
-    delay_time = 300 * std::ceil(delay_time / 300);
+    delay_time = 300 * std::ceil((float)delay_time / 300);
+
+    ESP_LOGI(TAG, "Controller is busy. Run delayed for %d seconds.");
 
     this->next_run_timestamp_ += delay_time;
   }
@@ -206,7 +217,10 @@ void SprinklerScheduleComponent::recalculate_next_run_() {
 
   // Don't run if we're lacking a valid clock
   if (!now.is_valid())
+  {
+    ESP_LOGW(TAG, "Clock is not valid. Failed to recalculate next run time.");
     return;  // TODO set an error?
+  }
 
   // Use previous run if set, otherwise use current time
   auto from_time = this->last_run_timestamp_ ? this->last_run_timestamp_ : now.timestamp;
@@ -216,7 +230,10 @@ void SprinklerScheduleComponent::recalculate_next_run_() {
 
   // If next run is in the past, schedule for tomorrow
   if (next < now.timestamp)
-    next = this->calculate_next_run_(from_time, 1);
+  {
+    ESP_LOGI(TAG, "Calculated next run is in the past. Scheduling for tomorrow.");
+    next = this->calculate_next_run_(now.timestamp, 1);
+  }
 
   this->next_run_timestamp_ = next;
 }
@@ -236,7 +253,10 @@ std::time_t SprinklerScheduleComponent::calculate_next_run_(std::time_t from, ui
 void SprinklerScheduleComponent::run_(const ESPTime *now, bool update_timestamps) {
   // Don't start if controller is busy or in standby
   if (this->is_controller_busy_() || this->controller_->standby())
+  {
+    ESP_LOGW(TAG, "Controller is busy or in standby. Run cancelled.");
     return;
+  }
 
   // Copy schedule settings to controller
   for (uint8_t i = 0; i < this->valves_.size(); i++) {
