@@ -68,7 +68,7 @@ void SprinklerScheduleComponent::setup() {
   if (this->delay_button_) {
     this->delay_button_->add_on_press_callback([this]() {
       // Add 1 day to next run
-      this->next_run_timestamp_ += 86400;
+      this->next_run_timestamp_ += SECONDS_IN_DAY;
     });
   }
 

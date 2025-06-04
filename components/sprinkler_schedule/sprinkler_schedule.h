@@ -13,6 +13,9 @@
 namespace esphome {
 namespace sprinkler_schedule {
 
+static constexpr const char* UNIT_MIN = "min";
+static constexpr uint32_t SECONDS_IN_DAY = 86400;
+
 enum SprinklerScheduleConflictResolution {
   SKIP,
   QUEUE
@@ -50,7 +53,7 @@ class SprinklerScheduleComponent : public Component {
 
     bool is_enabled() const { return (this->enable_switch == nullptr || this->enable_switch->state); }
     float get_duration_in_seconds() const {
-      if (((sprinkler::SprinklerControllerNumber*)duration_number)->traits.get_unit_of_measurement() == "min")
+      if (((sprinkler::SprinklerControllerNumber*)duration_number)->traits.get_unit_of_measurement() == UNIT_MIN)
         return duration_number->state * 60;
       else
         return duration_number->state;
