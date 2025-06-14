@@ -238,9 +238,9 @@ void SprinklerScheduleComponent::recalculate_next_run_() {
 std::time_t SprinklerScheduleComponent::calculate_next_run_(std::time_t from, uint32_t days) const {
   // Convert to local time and adjust for start time and days parameter
   struct tm *date = std::localtime(&from);
-  date->tm_hour = start_time_->hour;
-  date->tm_min = start_time_->minute;
-  date->tm_sec = start_time_->second;
+  date->tm_hour = this->start_time_->hour;
+  date->tm_min = this->start_time_->minute;
+  date->tm_sec = this->start_time_->second;
   date->tm_mday += days;
 
   // Convert to timestamp
