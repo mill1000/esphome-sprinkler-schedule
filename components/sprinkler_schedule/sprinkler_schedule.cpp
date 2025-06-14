@@ -254,6 +254,12 @@ void SprinklerScheduleComponent::run_(const ESPTime *now, bool update_timestamps
     return;
   }
 
+  // Check if at least one valve is enabled in the schedule
+  if (std::none_of(this->valves_.begin(), this->valves_.end(), [](const auto &valve) { return valve.is_enabled(); })) {
+    ESP_LOGW(TAG, "No valves enabled. Run cancelled.");
+    return;
+  }
+
   // Copy schedule settings to controller
   for (uint8_t i = 0; i < this->valves_.size(); i++) {
     const auto &valve = this->valves_[i];
