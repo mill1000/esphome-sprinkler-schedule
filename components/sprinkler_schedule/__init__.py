@@ -189,7 +189,7 @@ _SWITCH_SCHEMA = (
             cv.Optional(CONF_ENABLE_SWITCH): cv.maybe_simple_value(
                 switch.switch_schema(
                     SprinklerControllerSwitch,
-                    icon="mdi:calendar-remove",
+                    icon="mdi:calendar-check",
                     entity_category=ENTITY_CATEGORY_CONFIG,
                     default_restore_mode="RESTORE_DEFAULT_OFF",
                 ),
