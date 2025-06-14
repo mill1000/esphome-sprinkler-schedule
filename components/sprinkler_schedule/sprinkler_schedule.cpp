@@ -145,7 +145,10 @@ void SprinklerScheduleComponent::on_start_time_() {
 
   // Run if controller is idle
   if (!this->is_controller_busy_())
+  {
     this->run_(&now);
+    return;
+  }
 
   // Otherwise controller is busy, handle according to conflict resolution
   if (this->conflict_resolution_ == SKIP) {
