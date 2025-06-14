@@ -1,7 +1,10 @@
 external_components:
-  # Pull from local folder
-  - source: /components
+  # Pull from Github
+  - source: github://mill1000/esphome-sprinkler-schedule@main
     components: [sprinkler_schedule]
+  # # Pull from local folder
+  # - source: /components
+  #   components: [sprinkler_schedule]
 
 time:
   - platform: homeassistant
@@ -10,52 +13,23 @@ time:
 
 switch:
   - platform: gpio
-    pin: GPIO16 # Glitches on reboot
+    pin: GPIO16
+    id: relay_0
+    name: Relay 0
+    entity_category: diagnostic
+
+  - platform: gpio
+    pin: GPIO14
     id: relay_1
     name: Relay 1
     entity_category: diagnostic
 
   - platform: gpio
-    pin: GPIO14
+    pin: GPIO12
     id: relay_2
     name: Relay 2
     entity_category: diagnostic
 
-  - platform: gpio
-    pin: GPIO12
-    id: relay_3
-    name: Relay 3
-    entity_category: diagnostic
-
-  - platform: gpio
-    pin: GPIO13
-    id: relay_4
-    name: Relay 4
-    entity_category: diagnostic
-
-  - platform: gpio
-    pin: GPIO15
-    id: relay_5
-    name: Relay 5
-    entity_category: diagnostic
-
-  - platform: gpio
-    pin: GPIO00 # Glitches on reboot
-    id: relay_6
-    name: Relay 6
-    entity_category: diagnostic
-
-  - platform: gpio
-    pin: GPIO04
-    id: relay_7
-    name: Relay 7
-    entity_category: diagnostic
-
-  - platform: gpio
-    pin: GPIO05
-    id: relay_8
-    name: Relay 8
-    entity_category: diagnostic
 
 sprinkler:
   - id: sprinkler_controller
@@ -85,190 +59,154 @@ sprinkler:
       - valve_switch:
           name: Zone 1 - Front Yard
           icon: mdi:sprinkler
-
         enable_switch:
           name: Zone 1 - Enable
-          icon: mdi:timer-check
+          entity_category: diagnostic
           restore_mode: RESTORE_DEFAULT_OFF
-        valve_switch_id: relay_2
+        valve_switch_id: relay_0
         run_duration_number:
           name: Zone 1 - Duration
-          id: valve_1_cycle_duration
+          entity_category: diagnostic
           step: 1
           min_value: 0
           max_value: 30
           initial_value: 20
           restore_value: true
           unit_of_measurement: min
-          icon: mdi:timer
 
       - valve_switch:
           name: Zone 2 - Backyard North
           icon: mdi:sprinkler
         enable_switch:
           name: Zone 2 - Enable
-          icon: mdi:timer-check
+          entity_category: diagnostic
           restore_mode: RESTORE_DEFAULT_OFF
-        valve_switch_id: relay_3
+        valve_switch_id: relay_1
         run_duration_number:
           name: Zone 2 - Duration
-          id: valve_2_cycle_duration
+          entity_category: diagnostic
           step: 1
           min_value: 0
           max_value: 30
           initial_value: 20
           restore_value: true
           unit_of_measurement: min
-          icon: mdi:timer
 
       - valve_switch:
           name: Zone 3 - Backyard South
           icon: mdi:sprinkler
         enable_switch:
           name: Zone 3 - Enable
-          icon: mdi:timer-check
+          entity_category: diagnostic
           restore_mode: RESTORE_DEFAULT_OFF
-        valve_switch_id: relay_4
+        valve_switch_id: relay_2
         run_duration_number:
           name: Zone 3 - Duration
-          id: valve_3_cycle_duration
+          entity_category: diagnostic
           step: 1
           min_value: 0
           max_value: 30
           initial_value: 20
           restore_value: true
           unit_of_measurement: min
-          icon: mdi:timer
 
 sprinkler_schedule:
   - id: schedule_a
     controller_id: sprinkler_controller
     start_time:
-      name: Schedule A Start Time
+      name: Schedule A - Start Time
       initial_value: "06:00:00"
+    conflict_resolution: queue
 
-    enable_switch:
-      name: Enable Schedule A
-      icon: mdi:calendar-remove
+    enable_switch: Schedule A
 
-    frequency_number:
-      name: Schedule A Frequency
-      unit_of_measurement: d
-      icon: mdi:calendar-clock
+    frequency_number: Schedule A - Frequency
+    repetitions_number: Schedule A - Repetitions
 
-    repetitions_number:
-      name: Schedule A Repetitions
-      icon: mdi:water-sync
+    last_run_sensor: Schedule A Last Run
+    next_run_sensor: Schedule A Next Run
+    estimated_duration_sensor: Schedule A Duration
 
-    last_run_sensor:
-      name: Schedule A Last Run
-
-    next_run_sensor:
-      name: Schedule A Next Run
-
-    estimated_duration_sensor:
-      name: Schedule A Duration
-
-    manual_run_button:
-      name: Run Manual Cycle
-      icon: mdi:cog-play
-
-    run_now_button:
-      name: Run Schedule Now
-      icon: mdi:play
-
-    run_tomorrow_button:
-      name: Run Schedule Tomorrow
-      icon: mdi:calendar-start
-
-    delay_button:
-      name: Delay Schedule 1 Day
-      icon: mdi:calendar-plus
+    manual_run_button: Schedule A - Manual Cycle
+    run_now_button: Schedule A - Run Now
+    run_tomorrow_button: Schedule A - Run Tomorrow
+    delay_button: Schedule A - Delay 1 Day
+    reset_button: Schedule A - Reset
 
     valves:
-      - enable_switch:
-          name: Schedule A - Zone 1 - Enable
-          icon: mdi:timer-check
-
+      - enable_switch: Schedule A - Zone 1 Enable
         run_duration_number:
-          name: Schedule A - Zone 1 - Duration
+          name: Schedule A - Zone 1 Duration
           step: 1
           min_value: 0
           max_value: 30
           initial_value: 20
           unit_of_measurement: min
-          icon: mdi:timer
 
-      - enable_switch:
-          name: Schedule A - Zone 2 - Enable
-          icon: mdi:timer-check
-
+      - enable_switch: Schedule A - Zone 2 Enable
         run_duration_number:
-          name: Schedule A - Zone 2 - Duration
+          name: Schedule A - Zone 2 Duration
           step: 1
           min_value: 0
           max_value: 30
           initial_value: 20
           unit_of_measurement: min
-          icon: mdi:timer
 
-      - enable_switch:
-          name: Schedule A - Zone 3 - Enable
-          icon: mdi:timer-check
-
+      - enable_switch: Schedule A - Zone 3 Enable
         run_duration_number:
-          name: Schedule A - Zone 3 - Duration
+          name: Schedule A - Zone 3 Duration
           step: 1
           min_value: 0
           max_value: 30
           initial_value: 20
           unit_of_measurement: min
-          icon: mdi:timer
+  
+  - id: schedule_b
+    controller_id: sprinkler_controller
+    start_time:
+      name: Schedule B - Start Time
+      initial_value: "06:00:00"
+    conflict_resolution: skip
 
-  # - id: schedule_b
-  #   controller_id: sprinkler_controller
-  #   start_time:
-  #     name: Schedule Start Time
-  #     initial_value: "06:00:00"
+    enable_switch: Schedule B
 
-  #   # enable_switch:
-  #   #   id: enable_schedule
-  #   #   name: Enable Schedule
-  #   #   icon: mdi:calendar-remove
-  #   #   #optimistic: true
+    frequency_number: Schedule B - Frequency
+    repetitions_number: Schedule B - Repetitions
 
-  #   frequency_number:
-  #     name: Schedule Frequency
-  #     unit_of_measurement: d
-  #     icon: mdi:calendar-clock
+    last_run_sensor: Schedule B Last Run
+    next_run_sensor: Schedule B Next Run
+    estimated_duration_sensor: Schedule B Duration
 
-  #   repetitions_number:
-  #     name: Cycle Count
-  #     icon: mdi:water-sync
+    manual_run_button: Schedule B - Manual Cycle
+    run_now_button: Schedule B - Run Now
+    run_tomorrow_button: Schedule B - Run Tomorrow
+    delay_button: Schedule B - Delay 1 Day
+    reset_button: Schedule B - Reset
 
-  #   valves:
-  #     - enable_switch:
-  #         name: Zone 1 - Enable
-  #         icon: mdi:timer-check
+    valves:
+      - enable_switch: Schedule B - Zone 1 Enable
+        run_duration_number:
+          name: Schedule B - Zone 1 Duration
+          step: 1
+          min_value: 0
+          max_value: 30
+          initial_value: 20
+          unit_of_measurement: min
 
-  #       run_duration_number:
-  #         name: Zone 1 - Duration
-  #         step: 1
-  #         min_value: 0
-  #         max_value: 30
-  #         initial_value: 20
-  #         unit_of_measurement: min
-  #         icon: mdi:timer
+      - enable_switch: Schedule B - Zone 2 Enable
+        run_duration_number:
+          name: Schedule B - Zone 2 Duration
+          step: 1
+          min_value: 0
+          max_value: 30
+          initial_value: 20
+          unit_of_measurement: min
 
-  #     - enable_switch:
-  #         name: Zone 2 - Enable
-  #         icon: mdi:timer-check
-
-  #       run_duration_number:
-  #         name: Zone 2 - Duration
-  #         step: 1
-  #         min_value: 0
-  #         max_value: 30
-  #         initial_value: 20
-  #         unit_of_measurement: min
-  #         icon: mdi:timer
+      - enable_switch: Schedule B - Zone 3 Enable
+        run_duration_number:
+          name: Schedule B - Zone 3 Duration
+          step: 1
+          min_value: 0
+          max_value: 30
+          initial_value: 20
+          unit_of_measurement: min
