@@ -20,16 +20,9 @@ void SprinklerScheduleComponent::setup() {
     this->next_run_timestamp_ = restore_state.next_run_timestamp;
   }
 
-  // Call start time setup manually
-  this->start_time_->setup();
-
-  // Add callback to start time which will recalculate the next run time
+  // Add callback to start time which will recalculate the next run time, and start the run
   this->start_time_->add_on_state_callback([this]() { this->recalculate_next_run_(); });
-
-  // Setup schedule on time trigger
-  this->start_time_trigger_ = new ScheduleOnTimeTrigger();
-  this->start_time_trigger_->set_parent((datetime::TimeEntity *)this->start_time_);
-  this->start_time_trigger_->set_on_time_callback([this]() { this->on_start_time_(); });
+  this->start_time_->set_on_time_callback([this]() { this->on_start_time_(); });
 
   // Add callback to frequency number which will recalculate the next run time
   this->frequency_number_->add_on_state_callback([this](float value) { this->recalculate_next_run_(); });
@@ -88,9 +81,6 @@ void SprinklerScheduleComponent::setup() {
 }
 
 void SprinklerScheduleComponent::loop() {
-  // Update trigger
-  this->start_time_trigger_->loop();
-
   // Publish any updated sensor states
   this->update_timestamp_sensor_(this->last_run_sensor_, this->last_run_timestamp_, true);
   this->update_timestamp_sensor_(this->next_run_sensor_, this->next_run_timestamp_);
@@ -144,8 +134,7 @@ void SprinklerScheduleComponent::on_start_time_() {
     return;
 
   // Run if controller is idle
-  if (!this->is_controller_busy_())
-  {
+  if (!this->is_controller_busy_()) {
     this->run_(&now);
     return;
   }

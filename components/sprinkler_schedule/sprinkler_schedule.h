@@ -15,6 +15,7 @@ namespace sprinkler_schedule {
 
 static constexpr const char* UNIT_MIN = "min";
 static constexpr uint32_t SECONDS_IN_DAY = 86400;
+static constexpr uint32_t MAX_TIMESTAMP_DRIFT = 900;
 
 enum SprinklerScheduleConflictResolution {
   SKIP,
@@ -84,7 +85,6 @@ class SprinklerScheduleComponent : public Component {
   sprinkler::Sprinkler* controller_ = {nullptr};
   time::RealTimeClock* clock_ = {nullptr};  // TODO can't make const?
   SprinklerScheduleTime* start_time_ = {nullptr};
-  ScheduleOnTimeTrigger* start_time_trigger_;
 
   SprinklerScheduleConflictResolution conflict_resolution_ = SKIP;
 
@@ -108,9 +108,10 @@ class SprinklerScheduleComponent : public Component {
   bool is_controller_busy_() const { return (this->controller_->active_valve().has_value() || this->controller_->paused_valve().has_value()); }
 };
 
-class SprinklerScheduleTime : public datetime::TimeEntity {
+class SprinklerScheduleTime : public datetime::TimeEntity, public Component {
  public:
   void set_initial_value(ESPTime initial_value) { this->initial_value_ = initial_value; }
+  void set_on_time_callback(std::function<void()> callback) { this->on_time_ = callback; }
 
   void setup() {
     // Attempt to load previous value from flash
@@ -144,25 +145,64 @@ class SprinklerScheduleTime : public datetime::TimeEntity {
     this->pref_.save(&temp);
   }
 
+  // Taken verbatim from OnTimeTrigger
+  void loop() override {
+    if (!this->has_state()) {
+      return;
+    }
+
+    ESPTime time = this->rtc_->now();
+    if (!time.is_valid()) {
+      return;
+    }
+
+    if (this->last_check_.has_value()) {
+      if (*this->last_check_ > time && this->last_check_->timestamp - time.timestamp > MAX_TIMESTAMP_DRIFT) {
+        // We went back in time (a lot), probably caused by time synchronization
+      } else if (*this->last_check_ >= time) {
+        // already handled this one
+        return;
+      } else if (time > *this->last_check_ && time.timestamp - this->last_check_->timestamp > MAX_TIMESTAMP_DRIFT) {
+        // We went ahead in time (a lot), probably caused by time synchronization
+        this->last_check_ = time;
+        return;
+      }
+
+      while (true) {
+        this->last_check_->increment_second();
+        if (*this->last_check_ >= time) {
+          break;
+        }
+
+        if (this->matches_(*this->last_check_)) {
+          this->trigger_();
+          break;
+        }
+      }
+    }
+
+    this->last_check_ = time;
+    if (this->matches_(time)) {
+      this->trigger_();
+    }
+  }
+
  protected:
   ESPPreferenceObject pref_;
   ESPTime initial_value_{};
-};
 
-class ScheduleOnTimeTrigger : public datetime::OnTimeTrigger {
- public:
-  void set_on_time_callback(std::function<void()> callback) { this->on_time_ = callback; }
-
-  void trigger() {
-    // Call callback
+  void trigger_() {
     if (this->on_time_)
       this->on_time_();
+  }
 
-    // Call original trigger in case user defined an automation
-    OnTimeTrigger::trigger();
-  };
+  // Taken verbatim from OnTimeTrigger
+  bool matches_(const ESPTime& time) const {
+    return time.is_valid() && time.hour == this->hour && time.minute == this->minute &&
+           time.second == this->second;
+  }
 
- protected:
+  optional<ESPTime> last_check_;
   std::function<void()> on_time_;
 };
 

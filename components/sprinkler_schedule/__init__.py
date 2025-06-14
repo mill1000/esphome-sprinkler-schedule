@@ -47,7 +47,7 @@ SprinklerScheduleComponent = sprinkler_schedule_ns.class_(
     "SprinklerScheduleComponent", cg.Component)
 
 SprinklerScheduleTime = sprinkler_schedule_ns.class_(
-    "SprinklerScheduleTime", datetime.TimeEntity)
+    "SprinklerScheduleTime", datetime.TimeEntity, cg.Component)
 
 SprinklerScheduleButton = sprinkler_schedule_ns.class_(
     "SprinklerScheduleButton", button.Button)
@@ -355,6 +355,8 @@ async def _start_time_to_code(config) -> Pvariable:
             ("hour", initial_value[CONF_HOUR]),
         )
         cg.add(var.set_initial_value(time_struct))
+
+    await cg.register_component(var, config)
 
     return var
 
