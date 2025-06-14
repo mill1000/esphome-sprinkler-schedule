@@ -223,6 +223,14 @@ void SprinklerScheduleComponent::recalculate_next_run_() {
     return;  // TODO set an error?
   }
 
+  // Calculate soonest possible run
+  auto soonest_run = calculate_next_run_(now.timestamp, 0);
+  if (soonest_run > now.timestamp) {
+    ESP_LOGI(TAG, "Start time hasn't occurred. Scheduling for today.");
+    this->next_run_timestamp_ = soonest_run;
+    return;
+  }
+
   // Use previous run if set, otherwise use current time
   auto from_time = this->last_run_timestamp_ ? this->last_run_timestamp_ : now.timestamp;
 
