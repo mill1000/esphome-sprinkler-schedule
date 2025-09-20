@@ -109,8 +109,8 @@ class SprinklerScheduleComponent : public Component {
 
   void save_state_() const {
     SprinklerScheduleRestoreState state = {
-        .next_run_timestamp = this->next_run_timestamp_,
         .last_run_timestamp = this->last_run_timestamp_,
+        .next_run_timestamp = this->next_run_timestamp_,
     };
     this->pref_.save(&state);
   }
