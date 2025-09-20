@@ -51,9 +51,10 @@ void SprinklerScheduleComponent::setup() {
     this->run_tomorrow_button_->add_on_press_callback([this]() {
       // Reschedule 1 day from now
       const auto &now = this->clock_->now();
-      if (now.is_valid())
+      if (now.is_valid()) {
         this->next_run_timestamp_ = this->calculate_next_run_(now.timestamp, 1);
-      else
+        this->save_state_();
+      } else
         ESP_LOGW(TAG, "Clock is not valid. Run not scheduled for tomorrow.");
     });
   }
@@ -62,6 +63,7 @@ void SprinklerScheduleComponent::setup() {
     this->delay_button_->add_on_press_callback([this]() {
       // Add 1 day to next run
       this->next_run_timestamp_ += SECONDS_IN_DAY;
+      this->save_state_();
     });
   }
 
@@ -145,6 +147,7 @@ void SprinklerScheduleComponent::on_start_time_() {
 
     // Re-calculate next run if skipping
     this->next_run_timestamp_ = this->calculate_next_run_(now.timestamp, this->frequency_number_->state);
+    this->save_state_();
   } else if (this->conflict_resolution_ == QUEUE) {
     // Delay run by the time remaining in the current operation to the next 5 minute interval
     auto remaining = this->controller_->time_remaining_current_operation();
@@ -158,6 +161,7 @@ void SprinklerScheduleComponent::on_start_time_() {
     ESP_LOGI(TAG, "Controller is busy. Run delayed for %d seconds.");
 
     this->next_run_timestamp_ += delay_time;
+    this->save_state_();
   }
 }
 
@@ -217,6 +221,7 @@ void SprinklerScheduleComponent::recalculate_next_run_() {
   if (soonest_run > now.timestamp) {
     ESP_LOGI(TAG, "Start time hasn't occurred. Scheduling for today.");
     this->next_run_timestamp_ = soonest_run;
+    this->save_state_();
     return;
   }
 
@@ -233,6 +238,7 @@ void SprinklerScheduleComponent::recalculate_next_run_() {
   }
 
   this->next_run_timestamp_ = next;
+  this->save_state_();
 }
 
 std::time_t SprinklerScheduleComponent::calculate_next_run_(std::time_t from, uint32_t days) const {
@@ -285,8 +291,10 @@ void SprinklerScheduleComponent::run_(const ESPTime *now, bool update_timestamps
   this->controller_->start_full_cycle();
 
   // Calculate the next run time
-  if (update_timestamps)
+  if (update_timestamps) {
     this->next_run_timestamp_ = this->calculate_next_run_(now->timestamp, this->frequency_number_->state);
+    this->save_state_();
+  }
 }
 
 }  // namespace sprinkler_schedule
