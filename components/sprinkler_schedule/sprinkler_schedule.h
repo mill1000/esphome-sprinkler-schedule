@@ -106,6 +106,14 @@ class SprinklerScheduleComponent : public Component {
   void run_(const ESPTime* now, bool update_timestamps = true);
 
   bool is_controller_busy_() const { return (this->controller_->active_valve().has_value() || this->controller_->paused_valve().has_value()); }
+
+  void save_state_() {
+    SprinklerScheduleRestoreState state = {
+        .last_run_timestamp = this->last_run_timestamp_,
+        .next_run_timestamp = this->next_run_timestamp_,
+    };
+    this->pref_.save(&state);
+  }
 };
 
 class SprinklerScheduleTime : public datetime::TimeEntity, public Component {
