@@ -243,14 +243,17 @@ void SprinklerScheduleComponent::recalculate_next_run_() {
 
 std::time_t SprinklerScheduleComponent::calculate_next_run_(std::time_t from, uint32_t days) const {
   // Convert to local time and adjust for start time and days parameter
-  struct tm *date = std::localtime(&from);
-  date->tm_hour = this->start_time_->hour;
-  date->tm_min = this->start_time_->minute;
-  date->tm_sec = this->start_time_->second;
-  date->tm_mday += days;
+  ESPTime time = ESPTime::from_epoch_local(from);
+  time.hour = this->start_time_->hour;
+  time.minute = this->start_time_->minute;
+  time.second = this->start_time_->second;
+  time.recalc_timestamp_local();
+
+  for (auto i = 0; i < days; i++)
+    time.increment_day();
 
   // Convert to timestamp
-  return std::mktime(date);
+  return time.timestamp;
 }
 
 void SprinklerScheduleComponent::run_(const ESPTime *now, bool update_timestamps) {
