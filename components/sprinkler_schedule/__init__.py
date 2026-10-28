@@ -343,8 +343,11 @@ async def _number_to_code(schedule, config) -> None:
         cg.add(schedule.set_repetitions_number(num))
 
 
-async def _start_time_to_code(config) -> Pvariable:
+async def _start_time_to_code(config, time_id) -> Pvariable:
     """Create a datetime object for the schedule start time."""
+    # Inject the schedule's time_id so the datetime codegen wires the RTC
+    config = {**config, CONF_TIME_ID: time_id}
+
     var = await datetime.new_datetime(config)
 
     if initial_value := config.get(CONF_INITIAL_VALUE):
@@ -390,7 +393,7 @@ async def to_code(config) -> None:
     clock = await cg.get_variable(config[CONF_TIME_ID])
 
     # Create datetime object for schedule start time
-    start_time = await _start_time_to_code(config[CONF_START_TIME])
+    start_time = await _start_time_to_code(config[CONF_START_TIME], config[CONF_TIME_ID])
 
     # Construct schedule object
     schedule = cg.new_Pvariable(
